@@ -1,52 +1,26 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from '../views/Home.vue'
-import Process from '../views/MainView.vue'
-import SimulationView from '../views/SimulationView.vue'
-import SimulationRunView from '../views/SimulationRunView.vue'
-import ReportView from '../views/ReportView.vue'
-import InteractionView from '../views/InteractionView.vue'
+import CrisisIntake from '../views/CrisisIntake.vue'
+import CrisisGraphView from '../views/CrisisGraphView.vue'
 
+// Routes DISCOVER (Phase 1). Les vues des phases 2-4 (simulation d'agents
+// experts, trajectoires, scoring, interaction) seront ajoutées ensuite.
 const routes = [
   {
     path: '/',
     name: 'Home',
-    component: Home
+    component: CrisisIntake,
   },
   {
-    path: '/process/:projectId',
-    name: 'Process',
-    component: Process,
-    props: true
+    path: '/scenario/:scenarioId',
+    name: 'CrisisGraph',
+    component: CrisisGraphView,
+    props: true,
   },
-  {
-    path: '/simulation/:simulationId',
-    name: 'Simulation',
-    component: SimulationView,
-    props: true
-  },
-  {
-    path: '/simulation/:simulationId/start',
-    name: 'SimulationRun',
-    component: SimulationRunView,
-    props: true
-  },
-  {
-    path: '/report/:reportId',
-    name: 'Report',
-    component: ReportView,
-    props: true
-  },
-  {
-    path: '/interaction/:reportId',
-    name: 'Interaction',
-    component: InteractionView,
-    props: true
-  }
 ]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
 })
 
 export default router

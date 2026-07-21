@@ -18,6 +18,7 @@ from .ontology_generator import OntologyGenerator
 from .graph_builder import GraphBuilderService
 from .text_processor import TextProcessor
 from .zep_entity_reader import ZepEntityReader, EntityNode, FilteredEntities
+from .crisis_graph_extractor import CrisisGraphExtractor
 
 __all__ = [
     'OntologyGenerator',
@@ -26,4 +27,5 @@ __all__ = [
     'ZepEntityReader',
     'EntityNode',
     'FilteredEntities',
+    'CrisisGraphExtractor',
 ]

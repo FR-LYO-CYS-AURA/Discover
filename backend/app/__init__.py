@@ -57,9 +57,10 @@ def create_app(config_class=Config):
         rlogger.debug(f"Réponse: {response.status_code}")
         return response
 
-    # Blueprints (Phase 0 : graphe uniquement ; simulation/trajectoires ajoutés Phases 1-4)
-    from .api import graph_bp
+    # Blueprints (Phase 1 : graphe + scénarios de crise ; simulation/trajectoires ajoutés Phases 2-4)
+    from .api import graph_bp, scenario_bp
     app.register_blueprint(graph_bp, url_prefix='/api/graph')
+    app.register_blueprint(scenario_bp, url_prefix='/api/scenario')
 
     # Santé
     @app.route('/health')
