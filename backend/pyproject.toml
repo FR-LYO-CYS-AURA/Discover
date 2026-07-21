@@ -1,0 +1,51 @@
+[project]
+name = "discover-backend"
+version = "0.1.0"
+description = "DISCOVER - Simulation de risques, crises et exercices par société d'agents IA"
+requires-python = ">=3.11,<3.13"
+license = { text = "AGPL-3.0" }
+authors = [
+    { name = "DISCOVER Team" }
+]
+
+dependencies = [
+    # Framework web
+    "flask>=3.0.0",
+    "flask-cors>=6.0.0",
+
+    # LLM (format OpenAI)
+    "openai>=1.0.0",
+
+    # Zep Cloud (graphe d'interdépendances / mémoire GraphRAG)
+    "zep-cloud==3.13.0",
+
+    # Traitement de fichiers
+    "PyMuPDF>=1.24.0",
+    # Détection d'encodage (fichiers texte non-UTF8)
+    "charset-normalizer>=3.0.0",
+    "chardet>=5.0.0",
+
+    # Utilitaires
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pipreqs>=0.5.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]

@@ -1,0 +1,28 @@
+# ===========================================
+# DISCOVER Backend Dependencies
+# ===========================================
+# Python 3.11+ requis
+# Install : pip install -r requirements.txt
+# ===========================================
+
+# ============= Framework web =============
+flask>=3.0.0
+flask-cors>=6.0.0
+
+# ============= LLM =============
+# SDK OpenAI (appels LLM au format OpenAI unifié)
+openai>=1.0.0
+
+# ============= Zep Cloud =============
+# Graphe d'interdépendances / mémoire GraphRAG
+zep-cloud==3.13.0
+
+# ============= Traitement de fichiers =============
+PyMuPDF>=1.24.0
+# Détection d'encodage (fichiers texte non-UTF8)
+charset-normalizer>=3.0.0
+chardet>=5.0.0
+
+# ============= Utilitaires =============
+python-dotenv>=1.0.0
+pydantic>=2.0.0
