@@ -49,6 +49,45 @@ ALLOWED_RELATIONS = {
 }
 
 
+# JSON Schema de sortie (exploité par la sortie structurée native d'OpenCode)
+CRISIS_GRAPH_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "nodes": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": {"type": "string", "description": "identifiant court snake_case"},
+                    "label": {"type": "string", "description": "nom lisible du noeud"},
+                    "domain": {"type": "string", "description": "domaine parmi la liste autorisée"},
+                    "type": {"type": "string", "description": "type parmi la liste autorisée"},
+                    "criticality": {"type": "integer", "description": "criticité de 1 (mineur) à 5 (vital)"},
+                    "description": {"type": "string", "description": "rôle du noeud dans la crise"},
+                },
+                "required": ["id", "label", "domain", "type", "criticality"],
+            },
+        },
+        "edges": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "source": {"type": "string", "description": "id du noeud source"},
+                    "target": {"type": "string", "description": "id du noeud cible"},
+                    "relation": {"type": "string", "description": "relation parmi la liste autorisée"},
+                    "weight": {"type": "number", "description": "force de propagation de 0.0 à 1.0"},
+                    "description": {"type": "string", "description": "nature de l'interdépendance"},
+                },
+                "required": ["source", "target", "relation", "weight"],
+            },
+        },
+        "analysis_summary": {"type": "string", "description": "synthèse et chaînes de propagation"},
+    },
+    "required": ["nodes", "edges"],
+}
+
+
 SYSTEM_PROMPT = """Tu es un expert en gestion de crise et en analyse de risques systémiques.
 À partir de la description d'une situation de crise, tu construis un GRAPHE DE CRISE
 structuré, exploitable pour modéliser des effets domino entre domaines.
@@ -145,7 +184,8 @@ class CrisisGraphExtractor:
         for attempt in range(1, max_retries + 1):
             try:
                 logger.info(f"Extraction du graphe de crise (tentative {attempt}/{max_retries})")
-                raw = self.llm.chat_json(messages, temperature=0.3, max_tokens=4096)
+                raw = self.llm.chat_json(messages, temperature=0.3, max_tokens=4096,
+                                         schema=CRISIS_GRAPH_SCHEMA)
                 return self._validate_and_normalize(raw)
             except Exception as e:  # noqa: BLE001
                 last_error = e

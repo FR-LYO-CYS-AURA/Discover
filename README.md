@@ -97,7 +97,7 @@ Backend (Flask, Python)
   |- scoring_engine           Scoring consequences & decisions
   |- (v2) whatif_engine       Injection d'hypotheses + re-simulation temps reel
         |
-Services : LLM (API compatible OpenAI) . Zep Cloud (graphe memoire)
+Services : LLM via OpenCode (defaut) ou API compatible OpenAI . Zep Cloud (graphe memoire)
 ```
 
 ---
@@ -138,10 +138,34 @@ Services : LLM (API compatible OpenAI) . Zep Cloud (graphe memoire)
 
 ## Stack technique / Tech stack
 
-- **Backend** : Python 3.11+, Flask, OpenAI SDK, Zep Cloud
+- **Backend** : Python 3.11+, Flask, Zep Cloud
 - **Frontend** : Vue 3 (Composition API), Vite, Vue Router, D3.js, Axios
-- **LLM** : toute API compatible OpenAI / any OpenAI-compatible API (ex. Qwen, GPT, modèles locaux)
+- **LLM** : via le harness **OpenCode** (défaut) — l'auth et le modèle sont gérés par
+  OpenCode ; repli optionnel sur une API compatible OpenAI (`LLM_BACKEND=openai`).
 - **Communication** : REST + polling incrémental / REST + incremental polling
+
+---
+
+## LLM via OpenCode / LLM through OpenCode
+
+**FR —** Par défaut (`LLM_BACKEND=opencode`), DISCOVER délègue tous les appels LLM au
+harness [OpenCode](https://opencode.ai). Aucune clé LLM n'est stockée dans DISCOVER :
+l'authentification et le choix du modèle sont gérés par OpenCode.
+
+```bash
+# 1. Installer OpenCode puis configurer un fournisseur/modèle
+opencode auth login
+
+# 2. DISCOVER lance et gère automatiquement 'opencode serve' (OPENCODE_MANAGED=true).
+#    Pour utiliser un serveur déjà lancé : renseigner OPENCODE_SERVER_URL et OPENCODE_MANAGED=false.
+```
+
+**EN —** By default (`LLM_BACKEND=opencode`), DISCOVER delegates all LLM calls to the
+[OpenCode](https://opencode.ai) harness. No LLM key is stored in DISCOVER: authentication
+and model selection are handled by OpenCode. DISCOVER auto-starts and manages
+`opencode serve`; set `OPENCODE_SERVER_URL` + `OPENCODE_MANAGED=false` to use an external server.
+
+Les variables (`OPENCODE_*`, `LLM_BACKEND`) sont documentées dans `.env.example`.
 
 ---
 

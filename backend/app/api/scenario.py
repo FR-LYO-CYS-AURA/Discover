@@ -47,8 +47,8 @@ def _run_extraction(scenario):
 @scenario_bp.route('/create', methods=['POST'])
 def create_scenario():
     """Crée un scénario puis extrait le graphe de crise (synchrone)."""
-    if not Config.LLM_API_KEY:
-        return jsonify({"success": False, "error": "LLM_API_KEY non configurée"}), 400
+    if not Config.llm_ready():
+        return jsonify({"success": False, "error": "Backend LLM indisponible (voir OpenCode / LLM_BACKEND)"}), 503
 
     data = request.get_json(silent=True) or {}
     description = (data.get('description') or '').strip()
@@ -73,8 +73,8 @@ def create_scenario():
 @scenario_bp.route('/<scenario_id>/extract', methods=['POST'])
 def extract_scenario(scenario_id: str):
     """(Re)lance l'extraction du graphe de crise pour un scénario existant."""
-    if not Config.LLM_API_KEY:
-        return jsonify({"success": False, "error": "LLM_API_KEY non configurée"}), 400
+    if not Config.llm_ready():
+        return jsonify({"success": False, "error": "Backend LLM indisponible (voir OpenCode / LLM_BACKEND)"}), 503
 
     scenario = ScenarioManager.get_scenario(scenario_id)
     if not scenario:

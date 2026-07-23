@@ -1,103 +1,280 @@
 """
-LLM客户端封装
-统一使用OpenAI格式调用
+Client LLM DISCOVER.
+
+Deux backends sélectionnables via Config.LLM_BACKEND :
+  - "opencode" (défaut) : délègue au harness OpenCode (serveur HTTP local).
+    L'authentification et le choix du modèle sont gérés par la config OpenCode
+    (`opencode auth login`, `opencode.json`) — aucune LLM_API_KEY requise.
+  - "openai" : appel direct au format OpenAI (rétro-compatibilité).
+
+L'interface publique (chat / chat_json) est identique quel que soit le backend,
+afin que les services (crisis_graph_extractor, ontology_generator...) restent
+inchangés.
 """
 
 import json
 import re
 from typing import Optional, Dict, Any, List
+
+import httpx
 from openai import OpenAI
 
 from ..config import Config
+from .logger import get_logger
+
+logger = get_logger('discover.llm_client')
+
+# Outils OpenCode désactivés pour de la génération pure (pas d'agent qui lit/écrit des fichiers)
+_OPENCODE_TOOLS = [
+    "invalid", "question", "bash", "read", "glob", "grep", "edit", "write",
+    "task", "webfetch", "todowrite", "websearch", "skill", "apply_patch",
+]
 
 
-class LLMClient:
-    """LLM客户端"""
-    
+def _strip_think(content: str) -> str:
+    """Retire les blocs <think>...</think> de certains modèles à raisonnement visible."""
+    return re.sub(r'<think>[\s\S]*?</think>', '', content or '').strip()
+
+
+def _clean_json_text(text: str) -> str:
+    """Nettoie les fences Markdown autour d'un bloc JSON."""
+    cleaned = (text or '').strip()
+    cleaned = re.sub(r'^```(?:json)?\s*\n?', '', cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r'\n?```\s*$', '', cleaned)
+    return cleaned.strip()
+
+
+def _messages_to_prompt(messages: List[Dict[str, str]]) -> Dict[str, str]:
+    """
+    Convertit une liste de messages OpenAI en (system, prompt) pour OpenCode.
+    - messages system -> concaténés dans `system`
+    - messages user/assistant -> concaténés dans `prompt`
+    """
+    system_parts: List[str] = []
+    prompt_parts: List[str] = []
+    for m in messages:
+        role = m.get('role', 'user')
+        content = m.get('content', '') or ''
+        if role == 'system':
+            system_parts.append(content)
+        elif role == 'assistant':
+            prompt_parts.append(f"[Assistant précédent]\n{content}")
+        else:
+            prompt_parts.append(content)
+    return {
+        'system': "\n\n".join(system_parts).strip(),
+        'prompt': "\n\n".join(prompt_parts).strip(),
+    }
+
+
+# --------------------------------------------------------------------------- #
+# Backend OpenCode
+# --------------------------------------------------------------------------- #
+class OpenCodeClient:
+    """Client s'appuyant sur le serveur HTTP d'OpenCode (`opencode serve`)."""
+
+    def __init__(
+        self,
+        base_url: Optional[str] = None,
+        model: Optional[str] = None,
+        agent: Optional[str] = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        timeout: float = 300.0,
+    ):
+        self.base_url = (base_url or Config.OPENCODE_SERVER_URL).rstrip('/')
+        self.model = model if model is not None else Config.OPENCODE_MODEL
+        self.agent = agent if agent is not None else Config.OPENCODE_AGENT
+        username = username if username is not None else Config.OPENCODE_SERVER_USERNAME
+        password = password if password is not None else Config.OPENCODE_SERVER_PASSWORD
+        auth = (username or 'opencode', password) if password else None
+        self.timeout = timeout
+        self._auth = auth
+
+    def _client(self) -> httpx.Client:
+        return httpx.Client(base_url=self.base_url, timeout=self.timeout, auth=self._auth)
+
+    def _model_obj(self) -> Optional[Dict[str, str]]:
+        """Parse OPENCODE_MODEL 'providerID/modelID' -> {providerID, modelID}."""
+        if not self.model:
+            return None
+        if '/' not in self.model:
+            logger.warning(f"OPENCODE_MODEL '{self.model}' invalide (attendu 'provider/model'), ignoré")
+            return None
+        provider, model_id = self.model.split('/', 1)
+        return {"providerID": provider, "modelID": model_id}
+
+    def _base_body(self) -> Dict[str, Any]:
+        body: Dict[str, Any] = {"tools": {t: False for t in _OPENCODE_TOOLS}}
+        model_obj = self._model_obj()
+        if model_obj:
+            body["model"] = model_obj
+        if self.agent:
+            body["agent"] = self.agent
+        return body
+
+    def _prompt(self, messages: List[Dict[str, str]],
+                output_format: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Crée une session éphémère, envoie le prompt, renvoie la réponse brute, supprime la session."""
+        mapped = _messages_to_prompt(messages)
+        body = self._base_body()
+        body["parts"] = [{"type": "text", "text": mapped['prompt'] or ' '}]
+        if mapped['system']:
+            body["system"] = mapped['system']
+        if output_format:
+            body["format"] = output_format
+
+        with self._client() as client:
+            session = client.post('/session', json={"title": "discover"})
+            session.raise_for_status()
+            session_id = session.json()['id']
+            try:
+                resp = client.post(f'/session/{session_id}/message', json=body)
+                resp.raise_for_status()
+                return resp.json()
+            finally:
+                try:
+                    client.delete(f'/session/{session_id}')
+                except Exception as e:  # noqa: BLE001
+                    logger.warning(f"Suppression de session OpenCode échouée ({session_id}): {e}")
+
+    @staticmethod
+    def _extract_text(response: Dict[str, Any]) -> str:
+        parts = response.get('parts', []) or []
+        texts = [p.get('text', '') for p in parts if p.get('type') == 'text']
+        return _strip_think("\n".join(t for t in texts if t))
+
+    def chat(
+        self,
+        messages: List[Dict[str, str]],
+        temperature: float = 0.7,   # ignoré (géré par la config du modèle OpenCode)
+        max_tokens: int = 4096,     # ignoré
+        response_format: Optional[Dict] = None,
+    ) -> str:
+        response = self._prompt(messages)
+        return self._extract_text(response)
+
+    def chat_json(
+        self,
+        messages: List[Dict[str, str]],
+        temperature: float = 0.3,
+        max_tokens: int = 4096,
+        schema: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        # Voie 1 : sortie structurée native d'OpenCode (JSON validé)
+        if schema:
+            output_format = {"type": "json_schema", "schema": schema, "retryCount": 2}
+            response = self._prompt(messages, output_format=output_format)
+            structured = (response.get('info') or {}).get('structured')
+            if isinstance(structured, dict) and structured:
+                return structured
+            logger.warning("Sortie structurée OpenCode vide, repli sur le parsing texte")
+            # repli : tenter d'extraire du texte si présent
+            text = self._extract_text(response)
+            if text:
+                try:
+                    return json.loads(_clean_json_text(text))
+                except json.JSONDecodeError:
+                    pass
+            raise ValueError("OpenCode n'a pas produit de sortie structurée valide")
+
+        # Voie 2 : prompt libre + parsing (compat. sans schéma)
+        response = self._prompt(messages)
+        text = _clean_json_text(self._extract_text(response))
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError:
+            raise ValueError(f"JSON invalide renvoyé par OpenCode: {text}")
+
+    def health(self) -> bool:
+        try:
+            with self._client() as client:
+                r = client.get('/global/health')
+                return r.status_code == 200 and bool(r.json().get('healthy'))
+        except Exception:  # noqa: BLE001
+            return False
+
+
+# --------------------------------------------------------------------------- #
+# Backend OpenAI (rétro-compatibilité)
+# --------------------------------------------------------------------------- #
+class OpenAILLMClient:
+    """Client LLM direct au format OpenAI."""
+
     def __init__(
         self,
         api_key: Optional[str] = None,
         base_url: Optional[str] = None,
-        model: Optional[str] = None
+        model: Optional[str] = None,
     ):
         self.api_key = api_key or Config.LLM_API_KEY
         self.base_url = base_url or Config.LLM_BASE_URL
         self.model = model or Config.LLM_MODEL_NAME
-        
         if not self.api_key:
-            raise ValueError("LLM_API_KEY 未配置")
-        
-        self.client = OpenAI(
-            api_key=self.api_key,
-            base_url=self.base_url
-        )
-    
+            raise ValueError("LLM_API_KEY non configurée")
+        self.client = OpenAI(api_key=self.api_key, base_url=self.base_url)
+
     def chat(
         self,
         messages: List[Dict[str, str]],
         temperature: float = 0.7,
         max_tokens: int = 4096,
-        response_format: Optional[Dict] = None
+        response_format: Optional[Dict] = None,
     ) -> str:
-        """
-        发送聊天请求
-        
-        Args:
-            messages: 消息列表
-            temperature: 温度参数
-            max_tokens: 最大token数
-            response_format: 响应格式（如JSON模式）
-            
-        Returns:
-            模型响应文本
-        """
-        kwargs = {
+        kwargs: Dict[str, Any] = {
             "model": self.model,
             "messages": messages,
             "temperature": temperature,
             "max_tokens": max_tokens,
         }
-        
         if response_format:
             kwargs["response_format"] = response_format
-        
         response = self.client.chat.completions.create(**kwargs)
-        content = response.choices[0].message.content
-        # 部分模型（如MiniMax M2.5）会在content中包含<think>思考内容，需要移除
-        content = re.sub(r'<think>[\s\S]*?</think>', '', content).strip()
-        return content
-    
+        return _strip_think(response.choices[0].message.content)
+
     def chat_json(
         self,
         messages: List[Dict[str, str]],
         temperature: float = 0.3,
-        max_tokens: int = 4096
+        max_tokens: int = 4096,
+        schema: Optional[Dict[str, Any]] = None,  # non utilisé (mode json_object)
     ) -> Dict[str, Any]:
-        """
-        发送聊天请求并返回JSON
-        
-        Args:
-            messages: 消息列表
-            temperature: 温度参数
-            max_tokens: 最大token数
-            
-        Returns:
-            解析后的JSON对象
-        """
         response = self.chat(
             messages=messages,
             temperature=temperature,
             max_tokens=max_tokens,
-            response_format={"type": "json_object"}
+            response_format={"type": "json_object"},
         )
-        # 清理markdown代码块标记
-        cleaned_response = response.strip()
-        cleaned_response = re.sub(r'^```(?:json)?\s*\n?', '', cleaned_response, flags=re.IGNORECASE)
-        cleaned_response = re.sub(r'\n?```\s*$', '', cleaned_response)
-        cleaned_response = cleaned_response.strip()
-
+        cleaned = _clean_json_text(response)
         try:
-            return json.loads(cleaned_response)
+            return json.loads(cleaned)
         except json.JSONDecodeError:
-            raise ValueError(f"LLM返回的JSON格式无效: {cleaned_response}")
+            raise ValueError(f"JSON invalide renvoyé par le LLM: {cleaned}")
 
+
+# --------------------------------------------------------------------------- #
+# Façade à sélecteur de backend
+# --------------------------------------------------------------------------- #
+class LLMClient:
+    """
+    Façade LLM. Choisit le backend selon Config.LLM_BACKEND
+    ('opencode' par défaut, 'openai' en repli). Interface : chat / chat_json.
+    """
+
+    def __init__(self, backend: Optional[str] = None, **kwargs):
+        backend = (backend or Config.LLM_BACKEND or 'opencode').lower()
+        if backend == 'openai':
+            self._impl = OpenAILLMClient(**kwargs)
+        else:
+            self._impl = OpenCodeClient(**kwargs)
+        self.backend = backend
+
+    def chat(self, messages, temperature: float = 0.7, max_tokens: int = 4096,
+             response_format: Optional[Dict] = None) -> str:
+        return self._impl.chat(messages, temperature=temperature,
+                               max_tokens=max_tokens, response_format=response_format)
+
+    def chat_json(self, messages, temperature: float = 0.3, max_tokens: int = 4096,
+                  schema: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        return self._impl.chat_json(messages, temperature=temperature,
+                                    max_tokens=max_tokens, schema=schema)

@@ -10,8 +10,10 @@ flask>=3.0.0
 flask-cors>=6.0.0
 
 # ============= LLM =============
-# SDK OpenAI (appels LLM au format OpenAI unifié)
+# SDK OpenAI (utilisé par le backend LLM 'openai' optionnel)
 openai>=1.0.0
+# Client HTTP (utilisé pour le harness OpenCode + health checks)
+httpx>=0.27.0
 
 # ============= Zep Cloud =============
 # Graphe d'interdépendances / mémoire GraphRAG

@@ -43,6 +43,18 @@ def create_app(config_class=Config):
     # CORS
     CORS(app, resources={r"/api/*": {"origins": "*"}})
 
+    # Démarre le serveur OpenCode managé si nécessaire (backend LLM = opencode).
+    # start() est idempotent : s'il existe déjà un serveur sain, il est réutilisé.
+    try:
+        from .utils import opencode_manager
+        if opencode_manager.start():
+            if should_log_startup:
+                logger.info("Backend LLM : OpenCode disponible")
+        else:
+            logger.warning("Backend LLM OpenCode indisponible — les appels LLM échoueront")
+    except Exception as e:  # noqa: BLE001
+        logger.warning(f"Initialisation OpenCode échouée : {e}")
+
     # Middlewares de journalisation
     @app.before_request
     def log_request():

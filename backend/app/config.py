@@ -27,7 +27,24 @@ class Config:
     # JSON : ne pas échapper l'UTF-8 (accents affichés directement)
     JSON_AS_ASCII = False
 
-    # LLM (format OpenAI unifié)
+    # Backend LLM : 'opencode' (défaut, via le harness OpenCode) ou 'openai' (direct)
+    LLM_BACKEND = os.environ.get('LLM_BACKEND', 'opencode').lower()
+
+    # --- Backend OpenCode (harness) ---
+    # Auth et choix du modèle gérés par OpenCode ; aucune LLM_API_KEY requise.
+    OPENCODE_SERVER_URL = os.environ.get('OPENCODE_SERVER_URL', 'http://127.0.0.1:47600')
+    OPENCODE_SERVER_USERNAME = os.environ.get('OPENCODE_SERVER_USERNAME')
+    OPENCODE_SERVER_PASSWORD = os.environ.get('OPENCODE_SERVER_PASSWORD')
+    # Modèle optionnel au format 'providerID/modelID' (ex. github-copilot/claude-sonnet-4.6).
+    # Si vide, le modèle par défaut configuré dans OpenCode est utilisé.
+    OPENCODE_MODEL = os.environ.get('OPENCODE_MODEL') or None
+    OPENCODE_AGENT = os.environ.get('OPENCODE_AGENT') or None
+    # Serveur OpenCode managé par DISCOVER (sous-processus). Si OPENCODE_SERVER_URL
+    # pointe vers un serveur externe déjà lancé, mettre à 'false'.
+    OPENCODE_MANAGED = os.environ.get('OPENCODE_MANAGED', 'true').lower() == 'true'
+    OPENCODE_BIN = os.environ.get('OPENCODE_BIN', 'opencode')
+
+    # --- Backend OpenAI (rétro-compatibilité) ---
     LLM_API_KEY = os.environ.get('LLM_API_KEY')
     LLM_BASE_URL = os.environ.get('LLM_BASE_URL', 'https://api.openai.com/v1')
     LLM_MODEL_NAME = os.environ.get('LLM_MODEL_NAME', 'gpt-4o-mini')
@@ -62,10 +79,24 @@ class Config:
 
     @classmethod
     def validate(cls) -> list[str]:
-        """Valide la configuration requise."""
+        """Valide la configuration requise selon le backend LLM."""
         errors: list[str] = []
-        if not cls.LLM_API_KEY:
-            errors.append("LLM_API_KEY non configurée")
-        if not cls.ZEP_API_KEY:
-            errors.append("ZEP_API_KEY non configurée")
+        if cls.LLM_BACKEND == 'openai':
+            if not cls.LLM_API_KEY:
+                errors.append("LLM_API_KEY non configurée (LLM_BACKEND=openai)")
+        # En mode 'opencode', pas de clé requise : la disponibilité du serveur
+        # est vérifiée au démarrage (voir opencode_manager) et via llm_ready().
         return errors
+
+    @classmethod
+    def llm_ready(cls) -> bool:
+        """Indique si le backend LLM est prêt à être utilisé."""
+        if cls.LLM_BACKEND == 'openai':
+            return bool(cls.LLM_API_KEY)
+        # opencode : vérifie la santé du serveur
+        try:
+            import httpx
+            r = httpx.get(f"{cls.OPENCODE_SERVER_URL.rstrip('/')}/global/health", timeout=5)
+            return r.status_code == 200 and bool(r.json().get('healthy'))
+        except Exception:  # noqa: BLE001
+            return False
