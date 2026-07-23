@@ -14,7 +14,9 @@ from flask import Blueprint
 graph_bp = Blueprint('graph', __name__)
 scenario_bp = Blueprint('scenario', __name__)
 referentiel_bp = Blueprint('referentiel', __name__)
+simulation_bp = Blueprint('simulation', __name__)
 
 from . import graph  # noqa: E402, F401
 from . import scenario  # noqa: E402, F401
 from . import referentiel  # noqa: E402, F401
+from . import simulation  # noqa: E402, F401

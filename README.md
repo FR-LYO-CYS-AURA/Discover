@@ -112,8 +112,8 @@ Services : LLM via OpenCode (defaut) ou API compatible OpenAI . Zep Cloud (graph
 | `risk_repository` + référentiel | **Intégré / Integrated** | 64 scénarios, 9 familles, matrice de scoring / 64 scenarios, 9 families, scoring matrix |
 | `crisis_graph_extractor` | Intégré / Integrated | Scénario NL → graphe de crise / NL scenario → crisis graph |
 | Graphe d'interdépendances (Zep) | Adapté / Adapted | Actifs, domaines, dépendances pondérées / Assets, domains, weighted dependencies |
-| `expert_society` | À développer / To build | Agents des 9 familles (opérationnel, technique, RH, juridique, finance, comm, géo, cyber, résilience) |
-| `domino_engine` | À développer / To build | Propagation des effets domino / Domino-effect propagation |
+| `expert_society` | **Intégré / Integrated** | Agents des 9 familles (parallèle, spécialisation LLM) / 9-family expert agents |
+| `domino_engine` | **Intégré / Integrated** | Propagation hybride (déterministe + narration LLM) / Hybrid propagation |
 | `trajectory_generator` | À développer / To build | 4 trajectoires plausibles / 4 plausible trajectories |
 | `scoring_engine` | En cours / In progress | Scoring par domaine + agrégé / Per-domain + aggregate scoring |
 | Visualisation D3 (causes/conséquences) | Réutilisé / Reused | Graphe de propagation temps réel / Real-time propagation graph |
@@ -124,11 +124,11 @@ Services : LLM via OpenCode (defaut) ou API compatible OpenAI . Zep Cloud (graph
 ## Feuille de route / Roadmap
 
 - **Phase 0** — Fork, nettoyage (retrait OASIS), renommage, configuration
-  *(Fork, cleanup (remove OASIS), renaming, configuration)*
+  *(Fork, cleanup (remove OASIS), renaming, configuration)* ✅
 - **Phase 1** — Intake scénario + extraction et visualisation du graphe de crise
-  *(Scenario intake + crisis-graph extraction and visualization)*
+  *(Scenario intake + crisis-graph extraction and visualization)* ✅
 - **Phase 2** — Société d'agents experts + moteur d'effets domino
-  *(Expert-agent society + domino-effect engine)*
+  *(Expert-agent society + domino-effect engine)* ✅
 - **Phase 3** — Génération des 4 trajectoires + scoring
   *(Generation of the 4 trajectories + scoring)*
 - **Phase 4** — Frontend simulation temps réel + trajectoires côte à côte
@@ -158,6 +158,32 @@ d'extraction** du graphe de crise et l'**amorçage du scoring**. Régénération
 **EN —** DISCOVER ships a **baseline risk referential** (8 hazard categories, 64 crisis scenarios,
 9 risk families = the expert domains, and a probability×gravity→criticality scoring matrix). It
 powers assisted intake, crisis-graph extraction context and scoring seeding.
+
+---
+
+## Simulation de crise / Crisis simulation
+
+**FR —** Une fois le graphe de crise extrait (Phase 1), DISCOVER simule la crise :
+
+1. **Société d'agents experts** (`expert_society`) : un agent par domaine d'impact
+   pertinent (parmi les 9 familles, `resilience` toujours actif) analyse la crise
+   **en parallèle** via le harness OpenCode, en spécialisant les impacts/mesures
+   génériques du référentiel au scénario réel. Sortie : impacts, sévérité (1-5),
+   nœuds affectés, **propagations inter-domaines**, mesures.
+2. **Moteur d'effets domino** (`domino_engine`) : propagation **déterministe** sur
+   le graphe (poids d'arêtes × criticité, amplifiée par la famille `resilience`
+   sur les chaînes multi-domaines), puis **narration/qualification LLM** des
+   chaînes significatives. Sortie : graphe propagé (impact par nœud) + chaînes
+   de propagation narrées.
+
+API : `POST /api/simulation/run` (async + polling), `GET /api/simulation/<id>`.
+Frontend : bouton « Lancer la simulation » → vue temps réel (graphe avec
+surimpression d'impact + analyses par domaine + chaînes de propagation).
+
+**EN —** After crisis-graph extraction, DISCOVER runs a **society of expert agents**
+(one per relevant impact family, in parallel via OpenCode) then a **hybrid
+domino-effect engine** (deterministic propagation + LLM narration) producing an
+impacted graph and narrated propagation chains.
 
 ---
 

@@ -20,6 +20,8 @@ from .text_processor import TextProcessor
 from .zep_entity_reader import ZepEntityReader, EntityNode, FilteredEntities
 from .crisis_graph_extractor import CrisisGraphExtractor
 from .risk_repository import RiskRepository
+from .expert_society import ExpertSociety
+from .domino_engine import DominoEngine
 
 __all__ = [
     'OntologyGenerator',
@@ -30,4 +32,6 @@ __all__ = [
     'FilteredEntities',
     'CrisisGraphExtractor',
     'RiskRepository',
+    'ExpertSociety',
+    'DominoEngine',
 ]

@@ -69,11 +69,12 @@ def create_app(config_class=Config):
         rlogger.debug(f"Réponse: {response.status_code}")
         return response
 
-    # Blueprints (Phase 1-2 : graphe + scénarios + référentiel ; simulation/trajectoires Phases 2-4)
-    from .api import graph_bp, scenario_bp, referentiel_bp
+    # Blueprints (Phase 1-2 : graphe + scénarios + référentiel + simulation)
+    from .api import graph_bp, scenario_bp, referentiel_bp, simulation_bp
     app.register_blueprint(graph_bp, url_prefix='/api/graph')
     app.register_blueprint(scenario_bp, url_prefix='/api/scenario')
     app.register_blueprint(referentiel_bp, url_prefix='/api/referentiel')
+    app.register_blueprint(simulation_bp, url_prefix='/api/simulation')
 
     # Santé
     @app.route('/health')

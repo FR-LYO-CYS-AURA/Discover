@@ -41,6 +41,7 @@ import * as d3 from 'd3'
 const props = defineProps({
   nodes: { type: Array, default: () => [] },
   edges: { type: Array, default: () => [] },
+  impactMode: { type: Boolean, default: false },
 })
 
 const containerRef = ref(null)
@@ -122,7 +123,11 @@ function render() {
     .join('line')
     .attr('stroke', '#9aa0a6')
     .attr('stroke-opacity', 0.6)
-    .attr('stroke-width', d => 1 + (d.weight || 0.5) * 4)
+    .attr('stroke-width', d => {
+      if (props.impactMode && d.active) return 2 + (d.flow || 0) * 6
+      return 1 + (d.weight || 0.5) * 4
+    })
+    .attr('stroke', d => (props.impactMode && d.active) ? '#e63946' : '#9aa0a6')
     .attr('marker-end', 'url(#arrow)')
     .style('cursor', 'pointer')
     .on('click', (event, d) => {
@@ -157,6 +162,17 @@ function render() {
     .attr('fill', d => colorFor(d.domain))
     .attr('stroke', '#fff')
     .attr('stroke-width', 2)
+
+  // Halo d'impact (mode propagation)
+  if (props.impactMode) {
+    node.filter(d => (d.impact_score || 0) > 0.05)
+      .insert('circle', 'circle')
+      .attr('r', d => 8 + (d.criticality || 3) * 3 + 4 + (d.impact_score || 0) * 14)
+      .attr('fill', 'none')
+      .attr('stroke', '#e63946')
+      .attr('stroke-opacity', d => 0.25 + (d.impact_score || 0) * 0.6)
+      .attr('stroke-width', d => 1 + (d.impact_score || 0) * 4)
+  }
 
   node.append('text')
     .text(d => d.label)

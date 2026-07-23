@@ -12,6 +12,9 @@
         <button class="btn-ghost" :disabled="reextracting" @click="reextract">
           {{ reextracting ? 'Ré-extraction…' : 'Ré-extraire' }}
         </button>
+        <button class="btn-primary" :disabled="simulating || !nodes.length" @click="launchSimulation">
+          {{ simulating ? 'Lancement…' : 'Lancer la simulation' }}
+        </button>
       </div>
     </header>
 
@@ -50,6 +53,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import CrisisGraph from '../components/CrisisGraph.vue'
 import { getScenario, extractScenario } from '../api/scenario'
+import { runSimulation } from '../api/simulation'
 
 const props = defineProps({ scenarioId: { type: String, required: true } })
 const router = useRouter()
@@ -58,6 +62,7 @@ const scenario = ref(null)
 const loading = ref(true)
 const error = ref('')
 const reextracting = ref(false)
+const simulating = ref(false)
 
 const nodes = computed(() => scenario.value?.nodes || [])
 const edges = computed(() => scenario.value?.edges || [])
@@ -99,6 +104,18 @@ async function reextract() {
 
 function goHome() { router.push({ name: 'Home' }) }
 
+async function launchSimulation() {
+  simulating.value = true
+  error.value = ''
+  try {
+    const res = await runSimulation(props.scenarioId)
+    router.push({ name: 'CrisisSimulation', params: { simulationId: res.data.simulation_id } })
+  } catch (e) {
+    error.value = e?.message || 'Échec du lancement de la simulation.'
+    simulating.value = false
+  }
+}
+
 onMounted(load)
 </script>
 
@@ -120,6 +137,11 @@ onMounted(load)
   border-radius: 8px; padding: 8px 14px; cursor: pointer; font-size: 13px;
 }
 .btn-ghost:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary {
+  background: #e63946; border: none; color: #fff;
+  border-radius: 8px; padding: 8px 16px; cursor: pointer; font-size: 13px; font-weight: 600;
+}
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .graph-view__body { flex: 1; display: grid; grid-template-columns: 1fr 320px; gap: 0; }
 .graph-view__panel { padding: 16px; min-height: 0; }
