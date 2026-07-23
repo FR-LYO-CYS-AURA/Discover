@@ -56,5 +56,9 @@ backend/logs/
 # 上传文件
 backend/uploads/
 
-# Docker 数据
-data/
+# Docker 数据 (répertoire de données Docker à la racine uniquement)
+/data/docker/
+
+# Le référentiel de risques doit être versionné
+!backend/app/data/
+!data/referentiel_risques.csv

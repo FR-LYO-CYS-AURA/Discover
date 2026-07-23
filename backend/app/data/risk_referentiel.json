@@ -1,0 +1,959 @@
+{
+  "meta": {
+    "categories": 8,
+    "scenarios": 64,
+    "families": 9,
+    "rows_equivalent": 1152
+  },
+  "scoring": {
+    "prob_value": {
+      "Faible": 2,
+      "Moyenne": 3,
+      "Élevée": 4
+    },
+    "grav_value": {
+      "Moyenne": 3,
+      "Élevée": 4,
+      "Critique": 5
+    },
+    "matrix": "criticite = bucket(prob_value * grav_value) : <=12 Moyenne, <=20 Élevée, >20 Critique"
+  },
+  "categories": [
+    {
+      "id": "accident",
+      "label": "Accident",
+      "scenario_count": 8
+    },
+    {
+      "id": "alea_naturel",
+      "label": "Aléa naturel",
+      "scenario_count": 8
+    },
+    {
+      "id": "invasion",
+      "label": "Invasion",
+      "scenario_count": 8
+    },
+    {
+      "id": "medico_sanitaire",
+      "label": "Médico-sanitaire",
+      "scenario_count": 8
+    },
+    {
+      "id": "mouvement_social",
+      "label": "Mouvement social",
+      "scenario_count": 8
+    },
+    {
+      "id": "penurie",
+      "label": "Pénurie",
+      "scenario_count": 8
+    },
+    {
+      "id": "socio_culturel_politique_ecologique",
+      "label": "Socio-culturel / politique / écologique",
+      "scenario_count": 8
+    },
+    {
+      "id": "terrorisme_ou_malveillance",
+      "label": "Terrorisme ou malveillance",
+      "scenario_count": 8
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "accident_accident_du_travail_grave",
+      "category_id": "accident",
+      "category_label": "Accident",
+      "type": "Accident du travail grave",
+      "description": "Blessure grave ou décès sur site",
+      "tags": [
+        "arrêt d’activité",
+        "secours",
+        "enquête"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "accident_accident_transport",
+      "category_id": "accident",
+      "category_label": "Accident",
+      "type": "Accident transport",
+      "description": "Collision/déraillement sur un axe logistique",
+      "tags": [
+        "blocage",
+        "évacuation",
+        "retards"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "accident_tmd_fuite",
+      "category_id": "accident",
+      "category_label": "Accident",
+      "type": "TMD – fuite",
+      "description": "Perte de confinement lors d’un transport de matières dangereuses",
+      "tags": [
+        "périmètre",
+        "NRBC",
+        "dépollution"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "accident_incendie_d_equipement",
+      "category_id": "accident",
+      "category_label": "Accident",
+      "type": "Incendie d’équipement",
+      "description": "Départ de feu sur engin ou local technique",
+      "tags": [
+        "fumées",
+        "arrêt",
+        "dommages matériels"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "accident_explosion",
+      "category_id": "accident",
+      "category_label": "Accident",
+      "type": "Explosion",
+      "description": "Explosion (chimique ou physique) sur installation",
+      "tags": [
+        "onde de choc",
+        "blessés",
+        "destruction"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "accident_inondation_technique",
+      "category_id": "accident",
+      "category_label": "Accident",
+      "type": "Inondation technique",
+      "description": "Rupture de canalisation / infiltration en sous-sol",
+      "tags": [
+        "montée d’eau",
+        "pompage",
+        "arrêt"
+      ],
+      "base_probability": "Élevée"
+    },
+    {
+      "id": "accident_effondrement_d_ouvrage",
+      "category_id": "accident",
+      "category_label": "Accident",
+      "type": "Effondrement d’ouvrage",
+      "description": "Affaissement/effondrement localisé",
+      "tags": [
+        "instabilité",
+        "évacuation",
+        "risques tiers"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "accident_accident_reseau",
+      "category_id": "accident",
+      "category_label": "Accident",
+      "type": "Accident réseau",
+      "description": "Coupure électrique/telecom affectant la sécurité",
+      "tags": [
+        "ventilation",
+        "supervision",
+        "communications"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "alea_naturel_inondation",
+      "category_id": "alea_naturel",
+      "category_label": "Aléa naturel",
+      "type": "Inondation",
+      "description": "Crue / ruissellement / remontée de nappe",
+      "tags": [
+        "submersion",
+        "dégâts",
+        "interruption"
+      ],
+      "base_probability": "Élevée"
+    },
+    {
+      "id": "alea_naturel_tempete",
+      "category_id": "alea_naturel",
+      "category_label": "Aléa naturel",
+      "type": "Tempête",
+      "description": "Vent violent, chute d’arbres, dégâts",
+      "tags": [
+        "accès perturbés",
+        "dommages"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "alea_naturel_grele",
+      "category_id": "alea_naturel",
+      "category_label": "Aléa naturel",
+      "type": "Grêle",
+      "description": "Grêle intense endommageant toitures/ouvrages",
+      "tags": [
+        "sinistres",
+        "infiltration"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "alea_naturel_canicule",
+      "category_id": "alea_naturel",
+      "category_label": "Aléa naturel",
+      "type": "Canicule",
+      "description": "Chaleur extrême prolongée",
+      "tags": [
+        "santé",
+        "productivité",
+        "pannes"
+      ],
+      "base_probability": "Élevée"
+    },
+    {
+      "id": "alea_naturel_secheresse_rga",
+      "category_id": "alea_naturel",
+      "category_label": "Aléa naturel",
+      "type": "Sécheresse RGA",
+      "description": "Retrait-gonflement des argiles",
+      "tags": [
+        "fissures",
+        "désordres structurels"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "alea_naturel_seisme",
+      "category_id": "alea_naturel",
+      "category_label": "Aléa naturel",
+      "type": "Séisme",
+      "description": "Secousse sismique ressentie",
+      "tags": [
+        "inspection",
+        "arrêt préventif"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "alea_naturel_feu_de_foret",
+      "category_id": "alea_naturel",
+      "category_label": "Aléa naturel",
+      "type": "Feu de forêt",
+      "description": "Feu proche d’un site",
+      "tags": [
+        "évacuation",
+        "coupures",
+        "fumées"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "alea_naturel_submersion_marine",
+      "category_id": "alea_naturel",
+      "category_label": "Aléa naturel",
+      "type": "Submersion marine",
+      "description": "Submersion / marée de tempête",
+      "tags": [
+        "infrastructures côtières impactées"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "invasion_invasion_humaine",
+      "category_id": "invasion",
+      "category_label": "Invasion",
+      "type": "Invasion humaine",
+      "description": "Afflux massif sur site / occupation",
+      "tags": [
+        "sûreté",
+        "accès",
+        "continuité"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "invasion_invasion_animale_volante",
+      "category_id": "invasion",
+      "category_label": "Invasion",
+      "type": "Invasion animale volante",
+      "description": "Essaims, oiseaux dans zones critiques",
+      "tags": [
+        "risque collision",
+        "contamination"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "invasion_invasion_animale_terrestre",
+      "category_id": "invasion",
+      "category_label": "Invasion",
+      "type": "Invasion animale terrestre",
+      "description": "Rongeurs/espèces nuisibles",
+      "tags": [
+        "dégradations",
+        "hygiène"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "invasion_invasion_animale_aquatique",
+      "category_id": "invasion",
+      "category_label": "Invasion",
+      "type": "Invasion animale aquatique",
+      "description": "Prolifération dans prises d’eau",
+      "tags": [
+        "colmatage",
+        "pompage"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "invasion_invasion_numerique",
+      "category_id": "invasion",
+      "category_label": "Invasion",
+      "type": "Invasion numérique",
+      "description": "Arrivée massive de bots/spam",
+      "tags": [
+        "saturation canaux",
+        "SI"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "invasion_invasion_interne",
+      "category_id": "invasion",
+      "category_label": "Invasion",
+      "type": "Invasion “interne”",
+      "description": "Sur-sollicitation (appels, tickets)",
+      "tags": [
+        "désorganisation",
+        "surcharge"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "invasion_invasion_de_visiteurs",
+      "category_id": "invasion",
+      "category_label": "Invasion",
+      "type": "Invasion de visiteurs",
+      "description": "Curieux/médias sur site",
+      "tags": [
+        "image",
+        "sécurité"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "invasion_invasion_opportuniste",
+      "category_id": "invasion",
+      "category_label": "Invasion",
+      "type": "Invasion opportuniste",
+      "description": "Arrivée de faux prestataires",
+      "tags": [
+        "fraude",
+        "confusion"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "medico_sanitaire_epidemie",
+      "category_id": "medico_sanitaire",
+      "category_label": "Médico-sanitaire",
+      "type": "Épidémie",
+      "description": "Virus saisonnier/épidémie locale",
+      "tags": [
+        "absentéisme",
+        "mesures sanitaires"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "medico_sanitaire_pandemie",
+      "category_id": "medico_sanitaire",
+      "category_label": "Médico-sanitaire",
+      "type": "Pandémie",
+      "description": "Crise sanitaire majeure",
+      "tags": [
+        "PCA",
+        "télétravail",
+        "restrictions"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "medico_sanitaire_epizootie",
+      "category_id": "medico_sanitaire",
+      "category_label": "Médico-sanitaire",
+      "type": "Épizootie",
+      "description": "Maladie animale affectant chaîne",
+      "tags": [
+        "ruptures appro",
+        "restrictions"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "medico_sanitaire_intoxication",
+      "category_id": "medico_sanitaire",
+      "category_label": "Médico-sanitaire",
+      "type": "Intoxication",
+      "description": "Intoxication alimentaire ou chimique",
+      "tags": [
+        "évacuation",
+        "prise en charge"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "medico_sanitaire_contamination_eau",
+      "category_id": "medico_sanitaire",
+      "category_label": "Médico-sanitaire",
+      "type": "Contamination eau",
+      "description": "Suspicion contamination réseau d’eau",
+      "tags": [
+        "arrêt",
+        "analyses",
+        "communication"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "medico_sanitaire_chaleur_au_travail",
+      "category_id": "medico_sanitaire",
+      "category_label": "Médico-sanitaire",
+      "type": "Chaleur au travail",
+      "description": "Malaise(s) liés à chaleur",
+      "tags": [
+        "arrêts",
+        "adaptation postes"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "medico_sanitaire_sante_mentale",
+      "category_id": "medico_sanitaire",
+      "category_label": "Médico-sanitaire",
+      "type": "Santé mentale",
+      "description": "Crise psychosociale post-évènement",
+      "tags": [
+        "RPS",
+        "accompagnement"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "medico_sanitaire_rupture_soins",
+      "category_id": "medico_sanitaire",
+      "category_label": "Médico-sanitaire",
+      "type": "Rupture soins",
+      "description": "Indisponibilité secours/urgences",
+      "tags": [
+        "prise en charge retardée"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "mouvement_social_greve_interne",
+      "category_id": "mouvement_social",
+      "category_label": "Mouvement social",
+      "type": "Grève interne",
+      "description": "Grève dans l’organisation",
+      "tags": [
+        "baisse capacité",
+        "retards"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "mouvement_social_greve_nationale",
+      "category_id": "mouvement_social",
+      "category_label": "Mouvement social",
+      "type": "Grève nationale",
+      "description": "Transports/énergie en grève",
+      "tags": [
+        "logistique",
+        "accès",
+        "délais"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "mouvement_social_blocage",
+      "category_id": "mouvement_social",
+      "category_label": "Mouvement social",
+      "type": "Blocage",
+      "description": "Blocage d’accès / piquets",
+      "tags": [
+        "sécurité",
+        "continuité"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "mouvement_social_manifestation",
+      "category_id": "mouvement_social",
+      "category_label": "Mouvement social",
+      "type": "Manifestation",
+      "description": "Manifestation à proximité du site",
+      "tags": [
+        "risques sûreté",
+        "image"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "mouvement_social_droit_de_retrait",
+      "category_id": "mouvement_social",
+      "category_label": "Mouvement social",
+      "type": "Droit de retrait",
+      "description": "Retrait suite à risque perçu",
+      "tags": [
+        "arrêt opérations",
+        "dialogue"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "mouvement_social_emeute",
+      "category_id": "mouvement_social",
+      "category_label": "Mouvement social",
+      "type": "Émeute",
+      "description": "Troubles urbains",
+      "tags": [
+        "dégradations",
+        "évacuation"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "mouvement_social_cyber_mobilisation",
+      "category_id": "mouvement_social",
+      "category_label": "Mouvement social",
+      "type": "Cyber-mobilisation",
+      "description": "Campagne coordonnée en ligne",
+      "tags": [
+        "pression réputation",
+        "SI"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "mouvement_social_conflit_social_long",
+      "category_id": "mouvement_social",
+      "category_label": "Mouvement social",
+      "type": "Conflit social long",
+      "description": "Négociation durable tendue",
+      "tags": [
+        "perte productivité",
+        "turnover"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "penurie_penurie_energie",
+      "category_id": "penurie",
+      "category_label": "Pénurie",
+      "type": "Pénurie énergie",
+      "description": "Restriction / délestage électrique",
+      "tags": [
+        "arrêt",
+        "sécurité",
+        "SI"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "penurie_penurie_eau",
+      "category_id": "penurie",
+      "category_label": "Pénurie",
+      "type": "Pénurie eau",
+      "description": "Restriction d’usage / coupure",
+      "tags": [
+        "process",
+        "hygiène",
+        "pompage"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "penurie_penurie_carburant",
+      "category_id": "penurie",
+      "category_label": "Pénurie",
+      "type": "Pénurie carburant",
+      "description": "Appro carburant bloqué",
+      "tags": [
+        "logistique",
+        "engins"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "penurie_penurie_matieres",
+      "category_id": "penurie",
+      "category_label": "Pénurie",
+      "type": "Pénurie matières",
+      "description": "Rupture matières premières",
+      "tags": [
+        "production",
+        "chantiers"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "penurie_penurie_pieces",
+      "category_id": "penurie",
+      "category_label": "Pénurie",
+      "type": "Pénurie pièces",
+      "description": "Manque pièces critiques",
+      "tags": [
+        "maintenance",
+        "immobilisation"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "penurie_penurie_main_d_uvre",
+      "category_id": "penurie",
+      "category_label": "Pénurie",
+      "type": "Pénurie main-d’œuvre",
+      "description": "Difficultés recrutement/astreinte",
+      "tags": [
+        "continuité",
+        "fatigue"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "penurie_penurie_numerique",
+      "category_id": "penurie",
+      "category_label": "Pénurie",
+      "type": "Pénurie numérique",
+      "description": "Indispo services cloud/telecom",
+      "tags": [
+        "coordination",
+        "données"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "penurie_penurie_alimentaire",
+      "category_id": "penurie",
+      "category_label": "Pénurie",
+      "type": "Pénurie alimentaire",
+      "description": "Restauration indisponible site",
+      "tags": [
+        "conditions travail",
+        "RH"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "socio_culturel_politique_ecologique_evenement_pl",
+      "category_id": "socio_culturel_politique_ecologique",
+      "category_label": "Socio-culturel / politique / écologique",
+      "type": "Évènement planifié",
+      "description": "Grand évènement sportif/culturel",
+      "tags": [
+        "flux",
+        "sécurité",
+        "accès"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "socio_culturel_politique_ecologique_fete_nationa",
+      "category_id": "socio_culturel_politique_ecologique",
+      "category_label": "Socio-culturel / politique / écologique",
+      "type": "Fête nationale",
+      "description": "Célébrations et restrictions",
+      "tags": [
+        "mobilité",
+        "sûreté"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "socio_culturel_politique_ecologique_rassemblemen",
+      "category_id": "socio_culturel_politique_ecologique",
+      "category_label": "Socio-culturel / politique / écologique",
+      "type": "Rassemblement spontané",
+      "description": "Foule spontanée",
+      "tags": [
+        "panique",
+        "évacuation"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "socio_culturel_politique_ecologique_rumeurs",
+      "category_id": "socio_culturel_politique_ecologique",
+      "category_label": "Socio-culturel / politique / écologique",
+      "type": "Rumeurs",
+      "description": "Propagation rumeurs",
+      "tags": [
+        "désorganisation",
+        "réputation"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "socio_culturel_politique_ecologique_decision_pub",
+      "category_id": "socio_culturel_politique_ecologique",
+      "category_label": "Socio-culturel / politique / écologique",
+      "type": "Décision publique",
+      "description": "Arrêté / fermeture administrative",
+      "tags": [
+        "arrêt",
+        "conformité"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "socio_culturel_politique_ecologique_conflit_arme",
+      "category_id": "socio_culturel_politique_ecologique",
+      "category_label": "Socio-culturel / politique / écologique",
+      "type": "Conflit armé (effets)",
+      "description": "Effets indirects sur économie",
+      "tags": [
+        "supply",
+        "énergie"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "socio_culturel_politique_ecologique_activisme_ec",
+      "category_id": "socio_culturel_politique_ecologique",
+      "category_label": "Socio-culturel / politique / écologique",
+      "type": "Activisme écologique",
+      "description": "Action militante sur site",
+      "tags": [
+        "blocage",
+        "réputation"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "socio_culturel_politique_ecologique_crise_politi",
+      "category_id": "socio_culturel_politique_ecologique",
+      "category_label": "Socio-culturel / politique / écologique",
+      "type": "Crise politique",
+      "description": "Changement brutal cadre réglementaire",
+      "tags": [
+        "stratégie",
+        "coûts"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "terrorisme_ou_malveillance_intrusion",
+      "category_id": "terrorisme_ou_malveillance",
+      "category_label": "Terrorisme ou malveillance",
+      "type": "Intrusion",
+      "description": "Intrusion de personnes non autorisées",
+      "tags": [
+        "sûreté",
+        "sabotage"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "terrorisme_ou_malveillance_sabotage",
+      "category_id": "terrorisme_ou_malveillance",
+      "category_label": "Terrorisme ou malveillance",
+      "type": "Sabotage",
+      "description": "Dégradation volontaire d’équipements",
+      "tags": [
+        "arrêt",
+        "sécurité"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "terrorisme_ou_malveillance_agression",
+      "category_id": "terrorisme_ou_malveillance",
+      "category_label": "Terrorisme ou malveillance",
+      "type": "Agression",
+      "description": "Menace/agression personnel",
+      "tags": [
+        "psychologique",
+        "sécurité"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "terrorisme_ou_malveillance_attaque_explosif",
+      "category_id": "terrorisme_ou_malveillance",
+      "category_label": "Terrorisme ou malveillance",
+      "type": "Attaque explosif",
+      "description": "Engin explosif / colis suspect",
+      "tags": [
+        "évacuation",
+        "périmètre"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "terrorisme_ou_malveillance_nrbc_volontaire",
+      "category_id": "terrorisme_ou_malveillance",
+      "category_label": "Terrorisme ou malveillance",
+      "type": "NRBC volontaire",
+      "description": "Menace chimique/biologique",
+      "tags": [
+        "confinement",
+        "secours"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "terrorisme_ou_malveillance_cyberattaque",
+      "category_id": "terrorisme_ou_malveillance",
+      "category_label": "Terrorisme ou malveillance",
+      "type": "Cyberattaque",
+      "description": "Ransomware / DDoS / corruption",
+      "tags": [
+        "SI",
+        "continuité"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "terrorisme_ou_malveillance_vol_de_donnees",
+      "category_id": "terrorisme_ou_malveillance",
+      "category_label": "Terrorisme ou malveillance",
+      "type": "Vol de données",
+      "description": "Exfiltration/chantage",
+      "tags": [
+        "juridique",
+        "réputation"
+      ],
+      "base_probability": "Moyenne"
+    },
+    {
+      "id": "terrorisme_ou_malveillance_deepfake",
+      "category_id": "terrorisme_ou_malveillance",
+      "category_label": "Terrorisme ou malveillance",
+      "type": "Deepfake",
+      "description": "Faux message audio/vidéo crédible",
+      "tags": [
+        "panique",
+        "décisions erronées"
+      ],
+      "base_probability": "Moyenne"
+    }
+  ],
+  "families": [
+    {
+      "domain": "operationnel",
+      "label": "Opérationnel",
+      "examples": [
+        "Arrêt immédiat des activités et sécurisation du périmètre",
+        "Désorganisation de la coordination multi-acteurs (secours, autorités, partenaires)"
+      ],
+      "impacts": "Arrêt/retards, mode dégradé, impacts usagers/clients.",
+      "prevention": "PCA/PRA, procédures mode dégradé, exercices réguliers, annuaire crise.",
+      "mitigation": "Arrêt sécurisé, priorisation activités, cellule terrain, points de situation.",
+      "gravite": "Élevée"
+    },
+    {
+      "domain": "technique",
+      "label": "Industriel / technique",
+      "examples": [
+        "Destruction d’ouvrages ou d’équipements critiques",
+        "Déclenchement de sécurités et arrêt automatique des systèmes"
+      ],
+      "impacts": "Dommages matériels, risques de sur-accident, indisponibilité d’équipements.",
+      "prevention": "Maintenance préventive, inspections, redondances techniques, permis de travail.",
+      "mitigation": "Mise en sécurité, réparations, expertises, reprise sous conditions.",
+      "gravite": "Élevée"
+    },
+    {
+      "domain": "rh",
+      "label": "Ressources humaines",
+      "examples": [
+        "Traumatisme des équipes et stress post-évènement (RPS)",
+        "Exposition à des risques physiques (chaleur, fumées, toxiques)"
+      ],
+      "impacts": "Choc, fatigue, absentéisme, tensions sociales.",
+      "prevention": "Prévention RPS, formation managers, rotations astreinte, culture Stop Work.",
+      "mitigation": "Soutien psychologique, communication interne, renforts, repos imposé.",
+      "gravite": "Élevée"
+    },
+    {
+      "domain": "juridique",
+      "label": "Juridique / conformité",
+      "examples": [
+        "Mise en cause pénale (accident grave, mise en danger, pollution)",
+        "Contentieux contractuels (pénalités, retards, responsabilités)"
+      ],
+      "impacts": "Enquêtes, obligations, contentieux, sanctions.",
+      "prevention": "Veille réglementaire, audits, plans de prévention, conservation des preuves.",
+      "mitigation": "Déclarations, interface autorités, stratégie contentieuse, documentation.",
+      "gravite": "Critique"
+    },
+    {
+      "domain": "finance",
+      "label": "Financier",
+      "examples": [
+        "Coûts de réparation et de remise en état (ouvrages, équipements)",
+        "Hausse des primes, franchises et difficultés d’assurabilité"
+      ],
+      "impacts": "Pertes d’exploitation, coûts de remise en état, hausse primes/franchises.",
+      "prevention": "Assurances adaptées, budgets d’urgence, suivi trésorerie, clauses contractuelles.",
+      "mitigation": "Activation fonds d’urgence, suivi coûts, déclaration assureur, mitigation pénalités.",
+      "gravite": "Élevée"
+    },
+    {
+      "domain": "communication",
+      "label": "Image / réputation",
+      "examples": [
+        "Médiatisation nationale / locale et perte de confiance",
+        "Perception d’impréparation ou de manque de transparence"
+      ],
+      "impacts": "Perte de confiance, pression médiatique, rumeurs.",
+      "prevention": "Veille médias, porte-parole, éléments de langage, charte RS.",
+      "mitigation": "Communication factuelle/empathetic, lutte rumeurs, coordination autorités.",
+      "gravite": "Élevée"
+    },
+    {
+      "domain": "geopolitique",
+      "label": "Géopolitique / institutionnel",
+      "examples": [
+        "Intervention de l’État / autorités (préfecture, inspection, régulateur)",
+        "Priorisation nationale des ressources (énergie, santé, sécurité)"
+      ],
+      "impacts": "Injonctions, contrôles, arbitrages publics, priorisation ressources.",
+      "prevention": "Veille institutionnelle, carto parties prenantes, protocoles autorités.",
+      "mitigation": "Coordination préf/mairie/régulateurs, demandes de moyens publics.",
+      "gravite": "Élevée"
+    },
+    {
+      "domain": "cybersecurite",
+      "label": "Informatique / numérique",
+      "examples": [
+        "Perte du SI local (supervision, communications, annuaire, outils métier)",
+        "Cyberattaque opportuniste pendant la crise (phishing, ransom, DDoS)"
+      ],
+      "impacts": "Perte outils, rupture communications, fuite info.",
+      "prevention": "Segmentation, sauvegardes, redondance télécom, procédures hors-ligne.",
+      "mitigation": "Mode dégradé, restauration, canaux alternatifs, contrôle intégrité.",
+      "gravite": "Élevée"
+    },
+    {
+      "domain": "resilience",
+      "label": "Défaillance / résilience",
+      "examples": [
+        "Effet domino multi-réseaux (énergie + télécom + eau)",
+        "Défaillance d’un acteur clé (prestataire, fournisseur, opérateur)"
+      ],
+      "impacts": "Domino multi-systèmes, crise prolongée, défaillance gouvernance.",
+      "prevention": "Tests de résilience, exercices multi-crises, cartographie dépendances.",
+      "mitigation": "Limiter le domino, renforcer gouvernance, cellules spécialisées, REX.",
+      "gravite": "Élevée"
+    }
+  ]
+}

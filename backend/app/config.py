@@ -67,11 +67,15 @@ class Config:
     DEFAULT_CHUNK_OVERLAP = 50
 
     # ---- Paramètres DISCOVER (Phases 2-4) ----
-    # Domaines d'expertise activables (société d'agents experts)
+    # Domaines d'experts (société d'agents), alignés sur les 9 familles de risque
+    # du référentiel. 'resilience' pilote le moteur d'effets domino.
     EXPERT_DOMAINS = [
-        'cybersecurite', 'sante', 'rh', 'juridique',
-        'finance', 'communication', 'operations', 'logistique',
+        'operationnel', 'technique', 'rh', 'juridique', 'finance',
+        'communication', 'geopolitique', 'cybersecurite', 'resilience',
     ]
+    # Domaines "secteur" additionnels utilisables pour typer les noeuds du graphe
+    # de crise (contextes, pas des domaines d'impact d'experts).
+    SECTOR_DOMAINS = ['sante', 'logistique', 'physique', 'reglementaire', 'reputation', 'autre']
     # Trajectoires générées par simulation
     TRAJECTORY_TYPES = ['optimiste', 'intermediaire', 'critique', 'rupture']
     # Répertoire de données des simulations DISCOVER

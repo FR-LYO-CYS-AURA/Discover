@@ -15,6 +15,21 @@
           de crise : actifs, acteurs et interdépendances (support des effets domino).
         </p>
 
+        <div class="referentiel">
+          <span class="referentiel__label">Partir d'un scénario du référentiel (optionnel)</span>
+          <div class="referentiel__row">
+            <select v-model="selectedCategory" @change="onCategoryChange">
+              <option value="">— Catégorie d'aléa —</option>
+              <option v-for="c in refCategories" :key="c.id" :value="c.id">{{ c.label }}</option>
+            </select>
+            <select v-model="selectedRefScenario" :disabled="!refScenarios.length">
+              <option value="">— Scénario —</option>
+              <option v-for="s in refScenarios" :key="s.id" :value="s.id">{{ s.type }}</option>
+            </select>
+            <button class="btn-ghost" :disabled="!selectedRefScenario" @click="loadRefScenario">Charger</button>
+          </div>
+        </div>
+
         <label class="field">
           <span class="field__label">Titre (optionnel)</span>
           <input v-model="title" type="text" placeholder="Ex. Cyberattaque hôpitaux — G7" />
@@ -68,6 +83,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { createScenario, listScenarios, deleteScenario } from '../api/scenario'
+import { getReferentielCategories, getReferentielScenarios, getReferentielScenario } from '../api/referentiel'
 
 const router = useRouter()
 const title = ref('')
@@ -76,6 +92,45 @@ const context = ref('')
 const loading = ref(false)
 const error = ref('')
 const scenarios = ref([])
+
+// --- Référentiel de risques (intake assisté) ---
+const refCategories = ref([])
+const refScenarios = ref([])
+const selectedCategory = ref('')
+const selectedRefScenario = ref('')
+
+async function fetchReferentiel() {
+  try {
+    const res = await getReferentielCategories()
+    refCategories.value = res.data || []
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+async function onCategoryChange() {
+  selectedRefScenario.value = ''
+  refScenarios.value = []
+  if (!selectedCategory.value) return
+  try {
+    const res = await getReferentielScenarios(selectedCategory.value)
+    refScenarios.value = res.data || []
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+async function loadRefScenario() {
+  if (!selectedRefScenario.value) return
+  try {
+    const res = await getReferentielScenario(selectedRefScenario.value)
+    const scn = res.data
+    title.value = `${scn.type}`
+    description.value = `${scn.type} — ${scn.description}. Points sensibles : ${(scn.tags || []).join(', ')}.`
+  } catch (e) {
+    console.error(e)
+  }
+}
 
 const STATUS_LABELS = {
   created: 'Créé',
@@ -102,6 +157,7 @@ async function submit() {
       title: title.value.trim(),
       description: description.value.trim(),
       context: context.value.trim() || undefined,
+      referentiel_scenario_id: selectedRefScenario.value || undefined,
     })
     const id = res.data.scenario_id
     router.push({ name: 'CrisisGraph', params: { scenarioId: id } })
@@ -125,7 +181,10 @@ async function remove(id) {
   }
 }
 
-onMounted(fetchScenarios)
+onMounted(() => {
+  fetchScenarios()
+  fetchReferentiel()
+})
 </script>
 
 <style scoped>
@@ -153,6 +212,23 @@ onMounted(fetchScenarios)
   resize: vertical;
 }
 .field input:focus, .field textarea:focus { outline: none; border-color: #457b9d; }
+
+.referentiel {
+  background: #1a1d23; border: 1px solid #2a2d33; border-radius: 8px;
+  padding: 12px 14px; margin-bottom: 18px;
+}
+.referentiel__label { display: block; font-size: 13px; color: #b8bcc4; margin-bottom: 8px; }
+.referentiel__row { display: flex; gap: 8px; flex-wrap: wrap; }
+.referentiel__row select {
+  flex: 1; min-width: 140px; background: #0f1115; border: 1px solid #2a2d33;
+  border-radius: 6px; color: #e8eaed; padding: 8px 10px; font-size: 13px; font-family: inherit;
+}
+.referentiel__row select:disabled { opacity: 0.5; }
+.btn-ghost {
+  background: #0f1115; border: 1px solid #2a2d33; color: #e8eaed;
+  border-radius: 6px; padding: 8px 14px; cursor: pointer; font-size: 13px;
+}
+.btn-ghost:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .btn-primary {
   background: #e63946; color: #fff; border: none; border-radius: 8px;

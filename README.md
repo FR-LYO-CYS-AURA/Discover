@@ -89,12 +89,13 @@ Frontend (Vue 3 + Vite + D3.js)
   3. Simulation agents ->  4. Trajectoires & scoring
         | REST + polling
 Backend (Flask, Python)
+  |- risk_repository          Referentiel de risques socle (64 scenarios, 9 familles)
   |- crisis_graph_extractor   Extraction actifs / domaines / interdependances (LLM)
   |- graph_builder (Zep)      Graphe d'interdependances (GraphRAG)
-  |- expert_society           Societe d'agents experts par domaine
-  |- domino_engine            Propagation des effets sur le graphe
+  |- expert_society           Societe d'agents experts par domaine (9 familles)
+  |- domino_engine            Propagation des effets sur le graphe (famille resilience)
   |- trajectory_generator     4 trajectoires (optimiste -> rupture)
-  |- scoring_engine           Scoring consequences & decisions
+  |- scoring_engine           Scoring consequences & decisions (matrice de risque)
   |- (v2) whatif_engine       Injection d'hypotheses + re-simulation temps reel
         |
 Services : LLM via OpenCode (defaut) ou API compatible OpenAI . Zep Cloud (graphe memoire)
@@ -108,12 +109,13 @@ Services : LLM via OpenCode (defaut) ou API compatible OpenAI . Zep Cloud (graph
 |---|---|---|
 | Squelette (Flask + Vue3 + tâches async) | Réutilisé / Reused | Base technique / Technical base |
 | Client LLM, logs, retry, parsing fichiers | Réutilisé / Reused | Utilitaires / Utilities |
-| `crisis_graph_extractor` | À développer / To build | Scénario NL → graphe de crise / NL scenario → crisis graph |
+| `risk_repository` + référentiel | **Intégré / Integrated** | 64 scénarios, 9 familles, matrice de scoring / 64 scenarios, 9 families, scoring matrix |
+| `crisis_graph_extractor` | Intégré / Integrated | Scénario NL → graphe de crise / NL scenario → crisis graph |
 | Graphe d'interdépendances (Zep) | Adapté / Adapted | Actifs, domaines, dépendances pondérées / Assets, domains, weighted dependencies |
-| `expert_society` | À développer / To build | Agents cyber/santé/RH/juridique/finance/comm/ops/logistique |
+| `expert_society` | À développer / To build | Agents des 9 familles (opérationnel, technique, RH, juridique, finance, comm, géo, cyber, résilience) |
 | `domino_engine` | À développer / To build | Propagation des effets domino / Domino-effect propagation |
 | `trajectory_generator` | À développer / To build | 4 trajectoires plausibles / 4 plausible trajectories |
-| `scoring_engine` | À développer / To build | Scoring par domaine + agrégé / Per-domain + aggregate scoring |
+| `scoring_engine` | En cours / In progress | Scoring par domaine + agrégé / Per-domain + aggregate scoring |
 | Visualisation D3 (causes/conséquences) | Réutilisé / Reused | Graphe de propagation temps réel / Real-time propagation graph |
 | `whatif_engine` | v2 (après POC / after POC) | Hypothèses & effets instantanés / Hypotheses & instant effects |
 
@@ -133,6 +135,29 @@ Services : LLM via OpenCode (defaut) ou API compatible OpenAI . Zep Cloud (graph
   *(Real-time simulation frontend + side-by-side trajectories)*
 - **v2** — What-if temps réel, replay, déploiement on-premise souverain
   *(Real-time What-if, replay, sovereign on-premise deployment)*
+
+---
+
+## Référentiel de risques / Risk referential
+
+**FR —** DISCOVER intègre un **référentiel de risques socle** (`backend/app/data/risk_referentiel.json`,
+reconstruit en CSV dans `data/referentiel_risques.csv`) organisé en :
+
+- **8 catégories d'aléa** : Accident, Aléa naturel, Invasion, Médico-sanitaire, Mouvement social,
+  Pénurie, Socio-culturel/politique/écologique, Terrorisme/malveillance.
+- **64 scénarios** de crise (8 par catégorie), avec description et points sensibles (tags).
+- **9 familles de risque** (domaines d'impact transversaux) = les domaines d'experts de DISCOVER :
+  opérationnel, technique, RH, juridique, finance, communication, géopolitique, cybersécurité,
+  **résilience** (cette dernière pilotant le moteur d'effets domino).
+- **Scoring** : matrice Probabilité × Gravité → Criticité (qualitatif + numérique 1-5).
+
+Le référentiel alimente l'**intake assisté** (sélection catégorie → scénario), le **contexte
+d'extraction** du graphe de crise et l'**amorçage du scoring**. Régénération :
+`python backend/scripts/build_referentiel.py`.
+
+**EN —** DISCOVER ships a **baseline risk referential** (8 hazard categories, 64 crisis scenarios,
+9 risk families = the expert domains, and a probability×gravity→criticality scoring matrix). It
+powers assisted intake, crisis-graph extraction context and scoring seeding.
 
 ---
 

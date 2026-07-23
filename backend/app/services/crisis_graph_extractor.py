@@ -22,10 +22,8 @@ logger = get_logger('discover.crisis_graph_extractor')
 
 # Vocabulaire contrôlé -------------------------------------------------------
 
-# Domaines de noeud (alignés sur les domaines d'experts + catégories de crise)
-ALLOWED_DOMAINS = set(Config.EXPERT_DOMAINS) | {
-    'physique', 'geopolitique', 'reglementaire', 'reputation', 'autre'
-}
+# Domaines de noeud (9 familles d'experts + catégories/secteurs de crise)
+ALLOWED_DOMAINS = set(Config.EXPERT_DOMAINS) | set(Config.SECTOR_DOMAINS)
 
 # Types de noeud
 ALLOWED_NODE_TYPES = {
@@ -117,7 +115,7 @@ Tu dois répondre STRICTEMENT en JSON valide avec la structure suivante :
 }
 
 RÈGLES :
-- domain ∈ {cybersecurite, sante, rh, juridique, finance, communication, operations, logistique, physique, geopolitique, reglementaire, reputation, autre}
+- domain ∈ {operationnel, technique, rh, juridique, finance, communication, geopolitique, cybersecurite, resilience, sante, logistique, physique, reglementaire, reputation, autre}
 - type ∈ {actif, acteur, service, processus, ressource, externe}
 - relation ∈ {depend_de, impacte, fournit, regule, communique, heberge, protege}
 - criticality : entier de 1 (mineur) à 5 (vital)

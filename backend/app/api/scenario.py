@@ -16,6 +16,7 @@ from flask import request, jsonify
 from . import scenario_bp
 from ..config import Config
 from ..services.crisis_graph_extractor import CrisisGraphExtractor
+from ..services.risk_repository import RiskRepository
 from ..models.scenario import ScenarioManager, ScenarioStatus
 from ..utils.logger import get_logger
 
@@ -54,6 +55,13 @@ def create_scenario():
     description = (data.get('description') or '').strip()
     title = (data.get('title') or '').strip() or 'Scénario sans titre'
     context = (data.get('context') or '').strip() or None
+
+    # Si un scénario du référentiel est fourni, on enrichit le contexte d'extraction
+    ref_id = (data.get('referentiel_scenario_id') or '').strip()
+    if ref_id:
+        ref_context = RiskRepository().scenario_context(ref_id)
+        if ref_context:
+            context = f"{context}\n\n{ref_context}" if context else ref_context
 
     if not description:
         return jsonify({"success": False, "error": "Le champ 'description' est requis"}), 400
