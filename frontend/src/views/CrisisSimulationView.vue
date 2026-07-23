@@ -6,6 +6,7 @@
         <span class="brand">DISCOVER</span><span class="sep">/</span>
         <span>Simulation de crise</span>
       </div>
+      <CrisisStepper current="simulation" :scenario-id="scenarioId" :simulation-id="simulationId" />
       <span :class="['badge', 'badge--' + (sim ? sim.status : 'created')]">{{ statusLabel }}</span>
       <button v-if="sim && sim.status === 'completed'" class="btn-primary" @click="goTrajectories">
         Trajectoires &amp; scoring →
@@ -68,6 +69,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import CrisisGraph from '../components/CrisisGraph.vue'
+import CrisisStepper from '../components/CrisisStepper.vue'
 import { getSimulation } from '../api/simulation'
 
 const props = defineProps({ simulationId: { type: String, required: true } })
@@ -76,6 +78,8 @@ const router = useRouter()
 const sim = ref(null)
 const error = ref('')
 let poll = null
+
+const scenarioId = computed(() => sim.value?.scenario_id || '')
 
 const STATUS = {
   created: 'Créée', analyzing: 'Analyse experts', propagating: 'Propagation',

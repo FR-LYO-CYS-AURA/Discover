@@ -38,3 +38,13 @@ export function getTrajectories(simulationId) {
 export function getTaskStatus(taskId) {
   return service.post('/api/simulation/run/status', { task_id: taskId })
 }
+
+// --- Rapport de synthèse (Phase 4) ---
+export function getReport(simulationId) {
+  return service.get(`/api/simulation/${simulationId}/report`)
+}
+
+export function downloadReportUrl(simulationId) {
+  const base = service.defaults.baseURL || ''
+  return `${base}/api/simulation/${simulationId}/report/download`
+}

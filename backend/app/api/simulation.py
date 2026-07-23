@@ -12,13 +12,15 @@ Endpoints (préfixe /api/simulation) :
 
 import traceback
 import threading
-from flask import request, jsonify
+from typing import Optional
+from flask import request, jsonify, Response
 
 from . import simulation_bp
 from ..config import Config
 from ..services.expert_society import ExpertSociety
 from ..services.domino_engine import DominoEngine
 from ..services.trajectory_generator import TrajectoryGenerator
+from ..services import report_builder
 from ..models.scenario import ScenarioManager
 from ..models.simulation import SimulationManager, SimulationStatus
 from ..models.task import TaskManager, TaskStatus
@@ -241,3 +243,34 @@ def get_trajectories(simulation_id: str):
         "trajectories_status": sim.trajectories_status,
         "trajectories": sim.trajectories,
     }})
+
+
+# --------------------------------------------------------------------------- #
+# Rapport de synthèse (Phase 4)
+# --------------------------------------------------------------------------- #
+def _build_report(simulation_id: str) -> Optional[str]:
+    sim = SimulationManager.get_simulation(simulation_id)
+    if not sim:
+        return None
+    scenario = ScenarioManager.get_scenario(sim.scenario_id)
+    return report_builder.build_markdown(scenario, sim)
+
+
+@simulation_bp.route('/<simulation_id>/report', methods=['GET'])
+def get_report(simulation_id: str):
+    md = _build_report(simulation_id)
+    if md is None:
+        return jsonify({"success": False, "error": f"Simulation introuvable: {simulation_id}"}), 404
+    return jsonify({"success": True, "data": {"markdown": md}})
+
+
+@simulation_bp.route('/<simulation_id>/report/download', methods=['GET'])
+def download_report(simulation_id: str):
+    md = _build_report(simulation_id)
+    if md is None:
+        return jsonify({"success": False, "error": f"Simulation introuvable: {simulation_id}"}), 404
+    filename = f"rapport_crise_{simulation_id}.md"
+    return Response(
+        md, mimetype="text/markdown; charset=utf-8",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )

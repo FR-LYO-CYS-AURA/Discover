@@ -96,6 +96,7 @@ Backend (Flask, Python)
   |- domino_engine            Propagation des effets sur le graphe (famille resilience)
   |- trajectory_generator     4 trajectoires (optimiste -> rupture) [hybride + LLM]
   |- scoring_engine           Scoring consequences (1-5, 0-100) & decisions
+  |- report_builder           Rapport de synthese Markdown (exercice / decision)
   |- (v2) whatif_engine       Injection d'hypotheses + re-simulation temps reel
         |
 Services : LLM via OpenCode (defaut) ou API compatible OpenAI . Zep Cloud (graphe memoire)
@@ -116,6 +117,8 @@ Services : LLM via OpenCode (defaut) ou API compatible OpenAI . Zep Cloud (graph
 | `domino_engine` | **Intégré / Integrated** | Propagation hybride (déterministe + narration LLM) / Hybrid propagation |
 | `trajectory_generator` | **Intégré / Integrated** | 4 trajectoires (hybride paramétrique + narratif LLM) / 4 trajectories |
 | `scoring_engine` | **Intégré / Integrated** | Scoring conséquences (domaine 1-5, indice 0-100) + décisions / Consequence + decision scoring |
+| `report_builder` | **Intégré / Integrated** | Rapport de synthèse Markdown (contexte, analyses, chaînes, trajectoires, décisions) / Markdown synthesis report |
+| Parcours & historique (frontend) | **Intégré / Integrated** | Fil d'Ariane, reprise, aperçu imprimable / Stepper, resume, printable preview |
 | Visualisation D3 (causes/conséquences) | Réutilisé / Reused | Graphe de propagation temps réel / Real-time propagation graph |
 | `whatif_engine` | v2 (après POC / after POC) | Hypothèses & effets instantanés / Hypotheses & instant effects |
 
@@ -132,7 +135,9 @@ Services : LLM via OpenCode (defaut) ou API compatible OpenAI . Zep Cloud (graph
 - **Phase 3** — Génération des 4 trajectoires + scoring
   *(Generation of the 4 trajectories + scoring)* ✅
 - **Phase 4** — Frontend simulation temps réel + trajectoires côte à côte
-  *(Real-time simulation frontend + side-by-side trajectories)*
+  *(Real-time simulation frontend + side-by-side trajectories)* ✅
+  — parcours unifié (fil d'Ariane), historique & reprise, rapport de synthèse
+  exportable, tableau de décisions consolidées, nettoyage du legacy.
 - **v2** — What-if temps réel, replay, déploiement on-premise souverain
   *(Real-time What-if, replay, sovereign on-premise deployment)*
 

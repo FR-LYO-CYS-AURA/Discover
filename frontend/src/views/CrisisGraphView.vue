@@ -7,6 +7,7 @@
         <span class="sep">/</span>
         <span class="scn-title">{{ scenario?.title || 'Scénario' }}</span>
       </div>
+      <CrisisStepper current="graph" :scenario-id="scenarioId" />
       <div class="graph-view__actions">
         <span v-if="scenario" :class="['badge', 'badge--' + scenario.status]">{{ statusLabel(scenario.status) }}</span>
         <button class="btn-ghost" :disabled="reextracting" @click="reextract">
@@ -52,6 +53,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import CrisisGraph from '../components/CrisisGraph.vue'
+import CrisisStepper from '../components/CrisisStepper.vue'
 import { getScenario, extractScenario } from '../api/scenario'
 import { runSimulation } from '../api/simulation'
 

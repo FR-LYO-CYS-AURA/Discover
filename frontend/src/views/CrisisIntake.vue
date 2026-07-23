@@ -65,13 +65,29 @@
         <h2>Scénarios récents</h2>
         <div v-if="scenarios.length === 0" class="history-empty">Aucun scénario pour l'instant.</div>
         <ul class="history-list">
-          <li v-for="s in scenarios" :key="s.scenario_id" class="history-item" @click="open(s.scenario_id)">
-            <div class="history-item__title">{{ s.title }}</div>
-            <div class="history-item__meta">
-              <span :class="['badge', 'badge--' + s.status]">{{ statusLabel(s.status) }}</span>
-              <span class="history-item__counts">{{ s.node_count }} noeuds · {{ s.edge_count }} arêtes</span>
+          <li v-for="s in scenarios" :key="s.scenario_id" class="history-item">
+            <div class="history-item__body" @click="open(s.scenario_id)">
+              <div class="history-item__title">{{ s.title }}</div>
+              <div class="history-item__meta">
+                <span :class="['badge', 'badge--' + s.status]">{{ statusLabel(s.status) }}</span>
+                <span class="history-item__counts">{{ s.node_count }} noeuds · {{ s.edge_count }} arêtes</span>
+              </div>
             </div>
-            <button class="history-item__del" @click.stop="remove(s.scenario_id)" title="Supprimer">×</button>
+            <div class="history-item__row">
+              <button class="mini" @click.stop="toggleSims(s.scenario_id)">
+                {{ expanded[s.scenario_id] ? '▾' : '▸' }} Simulations
+              </button>
+              <button class="history-item__del" @click.stop="remove(s.scenario_id)" title="Supprimer">×</button>
+            </div>
+            <ul v-if="expanded[s.scenario_id]" class="sim-list">
+              <li v-if="(sims[s.scenario_id] || []).length === 0" class="sim-empty">Aucune simulation.</li>
+              <li v-for="sim in sims[s.scenario_id] || []" :key="sim.simulation_id" class="sim-item">
+                <span :class="['dot', 'dot--' + sim.status]"></span>
+                <span class="sim-item__id">{{ shortId(sim.simulation_id) }}</span>
+                <button class="mini mini--link" @click.stop="goSim(sim.simulation_id)">Simulation</button>
+                <button class="mini mini--link" @click.stop="goTraj(sim.simulation_id)">Trajectoires</button>
+              </li>
+            </ul>
           </li>
         </ul>
       </aside>
@@ -80,9 +96,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { createScenario, listScenarios, deleteScenario } from '../api/scenario'
+import { listSimulations } from '../api/simulation'
 import { getReferentielCategories, getReferentielScenarios, getReferentielScenario } from '../api/referentiel'
 
 const router = useRouter()
@@ -172,6 +189,25 @@ function open(id) {
   router.push({ name: 'CrisisGraph', params: { scenarioId: id } })
 }
 
+// --- Historique des simulations par scénario ---
+const expanded = reactive({})
+const sims = reactive({})
+
+async function toggleSims(scenarioId) {
+  expanded[scenarioId] = !expanded[scenarioId]
+  if (expanded[scenarioId] && !sims[scenarioId]) {
+    try {
+      const res = await listSimulations(scenarioId)
+      sims[scenarioId] = res.data || []
+    } catch (e) {
+      sims[scenarioId] = []
+    }
+  }
+}
+function shortId(id) { return (id || '').replace('sim_', '').slice(0, 8) }
+function goSim(id) { router.push({ name: 'CrisisSimulation', params: { simulationId: id } }) }
+function goTraj(id) { router.push({ name: 'CrisisTrajectories', params: { simulationId: id } }) }
+
 async function remove(id) {
   try {
     await deleteScenario(id)
@@ -245,16 +281,29 @@ onMounted(() => {
 .history-item {
   position: relative;
   background: #1a1d23; border: 1px solid #2a2d33; border-radius: 8px;
-  padding: 12px 14px; margin-bottom: 10px; cursor: pointer;
+  padding: 12px 14px; margin-bottom: 10px;
 }
 .history-item:hover { border-color: #457b9d; }
+.history-item__body { cursor: pointer; }
 .history-item__title { font-weight: 600; font-size: 14px; margin-bottom: 6px; padding-right: 20px; }
 .history-item__meta { display: flex; align-items: center; gap: 10px; }
 .history-item__counts { color: #9aa0a6; font-size: 12px; }
+.history-item__row { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
 .history-item__del {
-  position: absolute; top: 8px; right: 10px;
-  background: none; border: none; color: #6b7280; font-size: 18px; cursor: pointer;
+  background: none; border: none; color: #6b7280; font-size: 18px; cursor: pointer; line-height: 1;
 }
+.mini { background: none; border: none; color: #9aa0a6; font-size: 12px; cursor: pointer; padding: 2px 4px; }
+.mini:hover { color: #e8eaed; }
+.mini--link { color: #457b9d; }
+.mini--link:hover { color: #6ba3cc; }
+.sim-list { list-style: none; padding: 8px 0 0; margin: 6px 0 0; border-top: 1px solid #23262c; }
+.sim-empty { color: #6b7280; font-size: 12px; }
+.sim-item { display: flex; align-items: center; gap: 8px; font-size: 12px; padding: 3px 0; }
+.sim-item__id { color: #9aa0a6; font-family: monospace; flex: 1; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #6b7280; }
+.dot--completed { background: #5ee0a0; }
+.dot--failed { background: #ff8fab; }
+.dot--analyzing, .dot--propagating, .dot--narrating { background: #e9c46a; }
 .badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.4px; }
 .badge--graph_ready { background: #14432f; color: #5ee0a0; }
 .badge--failed { background: #4a1620; color: #ff8fab; }

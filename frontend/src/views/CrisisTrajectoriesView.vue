@@ -6,6 +6,8 @@
         <span class="brand">DISCOVER</span><span class="sep">/</span>
         <span>Trajectoires & scoring</span>
       </div>
+      <CrisisStepper current="trajectories" :scenario-id="scenarioId" :simulation-id="simulationId" />
+      <button v-if="trajectories.length" class="btn-ghost" @click="goReport">Rapport</button>
       <button v-if="status === 'none' || status === 'failed'" class="btn-primary"
               :disabled="generating" @click="launch">
         {{ generating ? 'Génération…' : 'Générer les trajectoires' }}
@@ -18,6 +20,23 @@
     </div>
 
     <div v-if="trajectories.length" class="traj__body">
+      <!-- Décisions consolidées -->
+      <section class="consolidated" v-if="consolidatedDecisions.length">
+        <h3>Décisions prioritaires (consolidées)</h3>
+        <div class="cons-list">
+          <div v-for="(d, i) in consolidatedDecisions" :key="i" class="cons">
+            <span class="cons__rank">{{ i + 1 }}</span>
+            <div class="cons__bar"><div class="cons__fill" :style="{ width: d.max_effect + '%', background: idxColor(d.max_effect) }"></div></div>
+            <div class="cons__txt">
+              <span class="cons__type">{{ d.type === 'mitigation' ? 'M' : 'P' }}</span>
+              {{ d.measure }}
+              <span class="cons__dom">{{ d.domain_label }}</span>
+              <span class="cons__score">{{ d.max_effect }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- Heatmap domaine x trajectoire -->
       <section class="heatmap">
         <h3>Criticité par domaine et trajectoire</h3>
@@ -87,7 +106,8 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getTrajectories, generateTrajectories, getTaskStatus } from '../api/simulation'
+import CrisisStepper from '../components/CrisisStepper.vue'
+import { getTrajectories, generateTrajectories, getTaskStatus, getSimulation } from '../api/simulation'
 
 const props = defineProps({ simulationId: { type: String, required: true } })
 const router = useRouter()
@@ -96,6 +116,7 @@ const status = ref('none')
 const trajectories = ref([])
 const generating = ref(false)
 const error = ref('')
+const scenarioId = ref('')
 let poll = null
 
 const domains = computed(() => {
@@ -106,6 +127,22 @@ const domains = computed(() => {
     }
   }
   return Object.entries(map).map(([key, label]) => ({ key, label }))
+})
+
+const consolidatedDecisions = computed(() => {
+  const agg = {}
+  for (const t of trajectories.value) {
+    for (const d of (t.decisions || [])) {
+      const key = d.domain + '|' + (d.measure || '').toLowerCase()
+      if (!agg[key]) {
+        agg[key] = { measure: d.measure, type: d.type, domain_label: d.domain_label, max_effect: d.effect_score, trajectories: [t.type] }
+      } else {
+        agg[key].max_effect = Math.max(agg[key].max_effect, d.effect_score)
+        if (!agg[key].trajectories.includes(t.type)) agg[key].trajectories.push(t.type)
+      }
+    }
+  }
+  return Object.values(agg).sort((a, b) => b.max_effect - a.max_effect).slice(0, 8)
 })
 
 function cellVal(t, dom) {
@@ -160,7 +197,17 @@ async function launch() {
 
 function goBack() { router.back() }
 
-onMounted(load)
+function goReport() {
+  router.push({ name: 'CrisisReport', params: { simulationId: props.simulationId } })
+}
+
+onMounted(async () => {
+  try {
+    const s = await getSimulation(props.simulationId)
+    scenarioId.value = s.data.scenario_id || ''
+  } catch (e) { /* non bloquant */ }
+  load()
+})
 onUnmounted(() => { if (poll) clearInterval(poll) })
 </script>
 
@@ -174,6 +221,18 @@ onUnmounted(() => { if (poll) clearInterval(poll) })
 .sep { color: #3a3d43; }
 .btn-primary { background: #e63946; border: none; color: #fff; border-radius: 8px; padding: 8px 16px; cursor: pointer; font-weight: 600; font-size: 13px; }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-ghost { background: #1a1d23; border: 1px solid #2a2d33; color: #e8eaed; border-radius: 8px; padding: 8px 14px; cursor: pointer; font-size: 13px; }
+
+.consolidated { margin-bottom: 28px; }
+.cons-list { display: flex; flex-direction: column; gap: 6px; }
+.cons { display: flex; align-items: center; gap: 10px; background: #1a1d23; border: 1px solid #2a2d33; border-radius: 8px; padding: 8px 12px; }
+.cons__rank { width: 20px; text-align: center; color: #9aa0a6; font-weight: 700; }
+.cons__bar { width: 90px; height: 5px; background: #2a2d33; border-radius: 3px; overflow: hidden; flex-shrink: 0; }
+.cons__fill { height: 100%; }
+.cons__txt { font-size: 13px; color: #cdd0d6; flex: 1; }
+.cons__type { display: inline-block; width: 16px; height: 16px; line-height: 16px; text-align: center; background: #2a2d33; border-radius: 3px; font-size: 10px; margin-right: 6px; }
+.cons__dom { color: #9aa0a6; font-size: 11px; margin-left: 8px; }
+.cons__score { color: #e76f51; float: right; font-weight: 600; }
 
 .progress { display: flex; align-items: center; gap: 12px; padding: 40px 24px; color: #b8bcc4; justify-content: center; }
 .progress__spinner { width: 18px; height: 18px; border: 2px solid #2a2d33; border-top-color: #e63946; border-radius: 50%; animation: spin .8s linear infinite; }
