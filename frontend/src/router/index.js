@@ -2,9 +2,10 @@ import { createRouter, createWebHistory } from 'vue-router'
 import CrisisIntake from '../views/CrisisIntake.vue'
 import CrisisGraphView from '../views/CrisisGraphView.vue'
 import CrisisSimulationView from '../views/CrisisSimulationView.vue'
+import CrisisTrajectoriesView from '../views/CrisisTrajectoriesView.vue'
 
-// Routes DISCOVER (Phases 1-2). Les vues des phases 3-4 (trajectoires, scoring,
-// interaction) seront ajoutées ensuite.
+// Routes DISCOVER (Phases 1-3). Les vues de la phase 4 (interaction) et v2
+// (what-if) seront ajoutées ensuite.
 const routes = [
   {
     path: '/',
@@ -21,6 +22,12 @@ const routes = [
     path: '/simulation/:simulationId',
     name: 'CrisisSimulation',
     component: CrisisSimulationView,
+    props: true,
+  },
+  {
+    path: '/simulation/:simulationId/trajectories',
+    name: 'CrisisTrajectories',
+    component: CrisisTrajectoriesView,
     props: true,
   },
 ]

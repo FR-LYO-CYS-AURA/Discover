@@ -122,8 +122,11 @@ class ScenarioManager:
     @classmethod
     def save_scenario(cls, scenario: Scenario) -> None:
         scenario.updated_at = datetime.now().isoformat()
-        with open(cls._get_meta_path(scenario.scenario_id), 'w', encoding='utf-8') as f:
+        path = cls._get_meta_path(scenario.scenario_id)
+        tmp = f"{path}.tmp"
+        with open(tmp, 'w', encoding='utf-8') as f:
             json.dump(scenario.to_dict(), f, ensure_ascii=False, indent=2)
+        os.replace(tmp, path)
 
     @classmethod
     def get_scenario(cls, scenario_id: str) -> Optional[Scenario]:

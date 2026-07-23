@@ -7,6 +7,9 @@
         <span>Simulation de crise</span>
       </div>
       <span :class="['badge', 'badge--' + (sim ? sim.status : 'created')]">{{ statusLabel }}</span>
+      <button v-if="sim && sim.status === 'completed'" class="btn-primary" @click="goTrajectories">
+        Trajectoires &amp; scoring →
+      </button>
     </header>
 
     <div v-if="running" class="progress">
@@ -112,6 +115,10 @@ async function load() {
 
 function goBack() { router.back() }
 
+function goTrajectories() {
+  router.push({ name: 'CrisisTrajectories', params: { simulationId: props.simulationId } })
+}
+
 onMounted(() => {
   load()
   poll = setInterval(load, 2000)
@@ -161,6 +168,7 @@ onUnmounted(() => { if (poll) clearInterval(poll) })
 .badge--completed { background: #14432f; color: #5ee0a0; }
 .badge--failed { background: #4a1620; color: #ff8fab; }
 .badge--analyzing, .badge--propagating, .badge--narrating, .badge--created { background: #2a2d33; color: #b8bcc4; }
+.btn-primary { background: #e63946; border: none; color: #fff; border-radius: 8px; padding: 7px 14px; cursor: pointer; font-weight: 600; font-size: 13px; }
 
 .overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(15,17,21,.7); }
 .overlay--error { color: #ff8fab; }

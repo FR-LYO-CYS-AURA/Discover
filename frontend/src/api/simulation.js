@@ -25,3 +25,16 @@ export function listSimulations(scenarioId) {
 export function deleteSimulation(simulationId) {
   return service.delete(`/api/simulation/${simulationId}`)
 }
+
+// --- Trajectoires (Phase 3) ---
+export function generateTrajectories(simulationId) {
+  return service.post(`/api/simulation/${simulationId}/trajectories`)
+}
+
+export function getTrajectories(simulationId) {
+  return service.get(`/api/simulation/${simulationId}/trajectories`)
+}
+
+export function getTaskStatus(taskId) {
+  return service.post('/api/simulation/run/status', { task_id: taskId })
+}

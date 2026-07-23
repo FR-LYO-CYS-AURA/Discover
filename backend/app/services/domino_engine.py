@@ -62,24 +62,32 @@ class DominoEngine:
 
     # ------------------------------------------------------------------ #
     def propagate(self, nodes: List[Dict[str, Any]], edges: List[Dict[str, Any]],
-                  expert_analyses: List[Dict[str, Any]], narrate: bool = True
+                  expert_analyses: List[Dict[str, Any]], narrate: bool = True,
+                  severity_mult: float = 1.0, decay: Optional[float] = None,
+                  resilience_amp: Optional[float] = None, mitigation_factor: float = 0.0,
+                  mitigated_node_ids: Optional[List[str]] = None
                   ) -> Dict[str, Any]:
+        decay = DECAY if decay is None else decay
+        resilience_amp = RESILIENCE_AMP if resilience_amp is None else resilience_amp
+        mitigated = set(mitigated_node_ids or [])
         node_by_id = {n['id']: n for n in nodes}
         crit = {n['id']: (n.get('criticality', 3) or 3) / 5.0 for n in nodes}
 
-        # 1) Amorçage : nœuds affectés par les experts (pondérés par sévérité)
+        # 1) Amorçage : nœuds affectés par les experts (pondérés par sévérité + trajectoire)
         impact: Dict[str, float] = {n['id']: 0.0 for n in nodes}
         order: Dict[str, int] = {}
         for a in expert_analyses:
             sev = (a.get('severity') or {}).get('criticality', 2) / 5.0
+            seed = min(1.0, (0.5 + 0.5 * sev) * severity_mult)
             for nid in a.get('affected_node_ids', []):
                 if nid in impact:
-                    impact[nid] = max(impact[nid], 0.5 + 0.5 * sev)
+                    val = seed * (1.0 - mitigation_factor) if nid in mitigated else seed
+                    impact[nid] = max(impact[nid], val)
                     order.setdefault(nid, 0)
         # nœuds vitaux non touchés reçoivent une amorce faible
         for n in nodes:
             if crit[n['id']] >= 0.8 and impact[n['id']] == 0.0:
-                impact[n['id']] = 0.2
+                impact[n['id']] = min(1.0, 0.2 * severity_mult)
 
         # arêtes experts (propagations inter-domaines) ajoutées comme liens virtuels
         virtual_edges = self._virtual_edges(expert_analyses, node_by_id)
@@ -94,7 +102,9 @@ class DominoEngine:
                 if s not in impact or t not in impact:
                     continue
                 w = float(e.get('weight', 0.5) or 0.5)
-                flow = impact[s] * w * (0.5 + 0.5 * crit.get(t, 0.6)) * (DECAY ** (rnd - 1))
+                flow = impact[s] * w * (0.5 + 0.5 * crit.get(t, 0.6)) * (decay ** (rnd - 1))
+                if t in mitigated:
+                    flow *= (1.0 - mitigation_factor)
                 if flow > delta[t]:
                     delta[t] = flow
                 eid = e.get('id') or f"{s}->{t}"
@@ -111,7 +121,7 @@ class DominoEngine:
 
         # 3) Construction des chaînes de propagation
         chains = self._build_chains(all_edges, impact, active_flow, node_by_id)
-        chains = self._amplify_resilience(chains)
+        chains = self._amplify_resilience(chains, resilience_amp)
 
         # 4) Narration LLM (bornée)
         if narrate and chains:
@@ -253,10 +263,10 @@ class DominoEngine:
         }
 
     @staticmethod
-    def _amplify_resilience(chains: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def _amplify_resilience(chains: List[Dict[str, Any]], amp: float = RESILIENCE_AMP) -> List[Dict[str, Any]]:
         for c in chains:
             if len(c['domains']) >= 2:
-                c['weight'] = round(min(1.0, c['weight'] * RESILIENCE_AMP), 3)
+                c['weight'] = round(min(1.0, c['weight'] * amp), 3)
                 c['multi_domain'] = True
             else:
                 c['multi_domain'] = False

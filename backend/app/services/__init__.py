@@ -22,6 +22,7 @@ from .crisis_graph_extractor import CrisisGraphExtractor
 from .risk_repository import RiskRepository
 from .expert_society import ExpertSociety
 from .domino_engine import DominoEngine
+from .trajectory_generator import TrajectoryGenerator
 
 __all__ = [
     'OntologyGenerator',
@@ -34,4 +35,5 @@ __all__ = [
     'RiskRepository',
     'ExpertSociety',
     'DominoEngine',
+    'TrajectoryGenerator',
 ]

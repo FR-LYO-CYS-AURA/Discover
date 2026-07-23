@@ -18,6 +18,7 @@ from . import simulation_bp
 from ..config import Config
 from ..services.expert_society import ExpertSociety
 from ..services.domino_engine import DominoEngine
+from ..services.trajectory_generator import TrajectoryGenerator
 from ..models.scenario import ScenarioManager
 from ..models.simulation import SimulationManager, SimulationStatus
 from ..models.task import TaskManager, TaskStatus
@@ -175,3 +176,68 @@ def delete_simulation(simulation_id: str):
     if not ok:
         return jsonify({"success": False, "error": f"Simulation introuvable: {simulation_id}"}), 404
     return jsonify({"success": True, "data": {"deleted": simulation_id}})
+
+
+# --------------------------------------------------------------------------- #
+# Trajectoires (Phase 3)
+# --------------------------------------------------------------------------- #
+def _generate_trajectories(simulation_id: str, task_id: str):
+    tm = TaskManager()
+    sim = SimulationManager.get_simulation(simulation_id)
+    if not sim:
+        tm.fail_task(task_id, "Simulation introuvable")
+        return
+    scenario = ScenarioManager.get_scenario(sim.scenario_id)
+    if not scenario:
+        sim.trajectories_status = "failed"
+        SimulationManager.save_simulation(sim)
+        tm.fail_task(task_id, "Scénario introuvable")
+        return
+    try:
+        sim.trajectories_status = "generating"
+        SimulationManager.save_simulation(sim)
+        tm.update_task(task_id, status=TaskStatus.PROCESSING, progress=20,
+                       message="Génération des trajectoires")
+        gen = TrajectoryGenerator()
+        trajectories = gen.generate(scenario.description, scenario.nodes,
+                                    scenario.edges, sim.expert_analyses)
+        sim.trajectories = trajectories
+        sim.trajectories_status = "completed"
+        SimulationManager.save_simulation(sim)
+        tm.complete_task(task_id, result={"simulation_id": simulation_id,
+                                           "count": len(trajectories)})
+        logger.info(f"Trajectoires {simulation_id} : {len(trajectories)} générées")
+    except Exception as e:  # noqa: BLE001
+        logger.error(f"Trajectoires {simulation_id} échouées : {e}\n{traceback.format_exc()}")
+        sim.trajectories_status = "failed"
+        sim.error = str(e)
+        SimulationManager.save_simulation(sim)
+        tm.fail_task(task_id, str(e))
+
+
+@simulation_bp.route('/<simulation_id>/trajectories', methods=['POST'])
+def generate_trajectories(simulation_id: str):
+    if not Config.llm_ready():
+        return jsonify({"success": False, "error": "Backend LLM indisponible"}), 503
+    sim = SimulationManager.get_simulation(simulation_id)
+    if not sim:
+        return jsonify({"success": False, "error": f"Simulation introuvable: {simulation_id}"}), 404
+    if sim.status != SimulationStatus.COMPLETED:
+        return jsonify({"success": False, "error": "La simulation n'est pas terminée"}), 400
+    task_id = TaskManager().create_task(task_type="crisis_trajectories",
+                                        metadata={"simulation_id": simulation_id})
+    threading.Thread(target=_generate_trajectories, args=(simulation_id, task_id),
+                     daemon=True).start()
+    return jsonify({"success": True, "data": {"simulation_id": simulation_id, "task_id": task_id}})
+
+
+@simulation_bp.route('/<simulation_id>/trajectories', methods=['GET'])
+def get_trajectories(simulation_id: str):
+    sim = SimulationManager.get_simulation(simulation_id)
+    if not sim:
+        return jsonify({"success": False, "error": f"Simulation introuvable: {simulation_id}"}), 404
+    return jsonify({"success": True, "data": {
+        "simulation_id": simulation_id,
+        "trajectories_status": sim.trajectories_status,
+        "trajectories": sim.trajectories,
+    }})

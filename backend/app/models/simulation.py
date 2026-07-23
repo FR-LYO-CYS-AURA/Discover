@@ -47,6 +47,10 @@ class Simulation:
     propagated_graph: Dict[str, Any] = field(default_factory=dict)        # {nodes:[{id,impact_score,order,domain}], ...}
     domain_scores: Dict[str, Any] = field(default_factory=dict)          # agrégat criticité par domaine
 
+    # Trajectoires (Phase 3)
+    trajectories: List[Dict[str, Any]] = field(default_factory=list)     # 4 trajectoires + scores
+    trajectories_status: str = "none"                                    # none|generating|completed|failed
+
     error: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
@@ -61,6 +65,8 @@ class Simulation:
             "propagation_chains": self.propagation_chains,
             "propagated_graph": self.propagated_graph,
             "domain_scores": self.domain_scores,
+            "trajectories": self.trajectories,
+            "trajectories_status": self.trajectories_status,
             "error": self.error,
         }
 
@@ -80,6 +86,8 @@ class Simulation:
             propagation_chains=data.get('propagation_chains', []),
             propagated_graph=data.get('propagated_graph', {}),
             domain_scores=data.get('domain_scores', {}),
+            trajectories=data.get('trajectories', []),
+            trajectories_status=data.get('trajectories_status', 'none'),
             error=data.get('error'),
         )
 
@@ -120,16 +128,27 @@ class SimulationManager:
     @classmethod
     def save_simulation(cls, sim: Simulation) -> None:
         sim.updated_at = datetime.now().isoformat()
-        with open(cls._get_meta_path(sim.simulation_id), 'w', encoding='utf-8') as f:
+        path = cls._get_meta_path(sim.simulation_id)
+        # écriture atomique (évite les lectures partielles pendant le polling)
+        tmp = f"{path}.tmp"
+        with open(tmp, 'w', encoding='utf-8') as f:
             json.dump(sim.to_dict(), f, ensure_ascii=False, indent=2)
+        os.replace(tmp, path)
 
     @classmethod
     def get_simulation(cls, simulation_id: str) -> Optional[Simulation]:
         meta = cls._get_meta_path(simulation_id)
         if not os.path.exists(meta):
             return None
-        with open(meta, 'r', encoding='utf-8') as f:
-            return Simulation.from_dict(json.load(f))
+        try:
+            with open(meta, 'r', encoding='utf-8') as f:
+                return Simulation.from_dict(json.load(f))
+        except (json.JSONDecodeError, ValueError):
+            # lecture concurrente d'un fichier en cours d'écriture : nouvelle tentative
+            import time as _t
+            _t.sleep(0.05)
+            with open(meta, 'r', encoding='utf-8') as f:
+                return Simulation.from_dict(json.load(f))
 
     @classmethod
     def list_simulations(cls, scenario_id: Optional[str] = None, limit: int = 50) -> List[Simulation]:

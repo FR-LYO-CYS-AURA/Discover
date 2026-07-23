@@ -94,8 +94,8 @@ Backend (Flask, Python)
   |- graph_builder (Zep)      Graphe d'interdependances (GraphRAG)
   |- expert_society           Societe d'agents experts par domaine (9 familles)
   |- domino_engine            Propagation des effets sur le graphe (famille resilience)
-  |- trajectory_generator     4 trajectoires (optimiste -> rupture)
-  |- scoring_engine           Scoring consequences & decisions (matrice de risque)
+  |- trajectory_generator     4 trajectoires (optimiste -> rupture) [hybride + LLM]
+  |- scoring_engine           Scoring consequences (1-5, 0-100) & decisions
   |- (v2) whatif_engine       Injection d'hypotheses + re-simulation temps reel
         |
 Services : LLM via OpenCode (defaut) ou API compatible OpenAI . Zep Cloud (graphe memoire)
@@ -114,8 +114,8 @@ Services : LLM via OpenCode (defaut) ou API compatible OpenAI . Zep Cloud (graph
 | Graphe d'interdépendances (Zep) | Adapté / Adapted | Actifs, domaines, dépendances pondérées / Assets, domains, weighted dependencies |
 | `expert_society` | **Intégré / Integrated** | Agents des 9 familles (parallèle, spécialisation LLM) / 9-family expert agents |
 | `domino_engine` | **Intégré / Integrated** | Propagation hybride (déterministe + narration LLM) / Hybrid propagation |
-| `trajectory_generator` | À développer / To build | 4 trajectoires plausibles / 4 plausible trajectories |
-| `scoring_engine` | En cours / In progress | Scoring par domaine + agrégé / Per-domain + aggregate scoring |
+| `trajectory_generator` | **Intégré / Integrated** | 4 trajectoires (hybride paramétrique + narratif LLM) / 4 trajectories |
+| `scoring_engine` | **Intégré / Integrated** | Scoring conséquences (domaine 1-5, indice 0-100) + décisions / Consequence + decision scoring |
 | Visualisation D3 (causes/conséquences) | Réutilisé / Reused | Graphe de propagation temps réel / Real-time propagation graph |
 | `whatif_engine` | v2 (après POC / after POC) | Hypothèses & effets instantanés / Hypotheses & instant effects |
 
@@ -130,7 +130,7 @@ Services : LLM via OpenCode (defaut) ou API compatible OpenAI . Zep Cloud (graph
 - **Phase 2** — Société d'agents experts + moteur d'effets domino
   *(Expert-agent society + domino-effect engine)* ✅
 - **Phase 3** — Génération des 4 trajectoires + scoring
-  *(Generation of the 4 trajectories + scoring)*
+  *(Generation of the 4 trajectories + scoring)* ✅
 - **Phase 4** — Frontend simulation temps réel + trajectoires côte à côte
   *(Real-time simulation frontend + side-by-side trajectories)*
 - **v2** — What-if temps réel, replay, déploiement on-premise souverain
@@ -184,6 +184,29 @@ surimpression d'impact + analyses par domaine + chaînes de propagation).
 (one per relevant impact family, in parallel via OpenCode) then a **hybrid
 domino-effect engine** (deterministic propagation + LLM narration) producing an
 impacted graph and narrated propagation chains.
+
+---
+
+## Trajectoires & scoring / Trajectories & scoring
+
+**FR —** À partir d'une simulation, DISCOVER génère **4 trajectoires** plausibles
+(`optimiste, intermédiaire, critique, rupture`) par approche **hybride** :
+
+1. `trajectory_generator` module des paramètres déterministes par branche (sévérité,
+   mitigation, propagation, saturation `resilience`) et **rejoue le moteur domino**,
+   puis produit les 4 **narratifs + bascules clés** en un seul appel LLM.
+2. `scoring_engine` calcule, par trajectoire, un **scoring de conséquences**
+   (criticité par domaine 1-5 + **indice global 0-100**) et un **scoring de décisions**
+   (mesures classées par effet estimé) pour aider à la priorisation.
+
+API : `POST /api/simulation/<id>/trajectories` (async), `GET …/trajectories`.
+Frontend : bouton « Trajectoires & scoring » → vue comparant les **4 branches côte
+à côte** + **heatmap domaine × trajectoire** + décisions prioritaires.
+
+**EN —** From a simulation, DISCOVER generates **4 plausible trajectories** via a
+hybrid approach (deterministic parameter variation + domino re-run + single LLM call
+for narratives), each scored on consequences (per-domain 1-5, global 0-100) and
+decisions (measures ranked by estimated effect).
 
 ---
 
