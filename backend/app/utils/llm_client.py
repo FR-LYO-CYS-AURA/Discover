@@ -149,6 +149,9 @@ class OpenCodeClient:
             return
         info = response.get('info') or {}
         tk = info.get('tokens') or {}
+        provider = info.get('providerID')
+        model_id = info.get('modelID')
+        model = f"{provider}/{model_id}" if (provider and model_id) else (model_id or None)
         try:
             self.usage_tracker.record(
                 tokens_input=tk.get('input', 0),
@@ -157,6 +160,7 @@ class OpenCodeClient:
                 tokens_total=tk.get('total', 0),
                 cost=info.get('cost', 0.0),
                 duration=duration,
+                model=model,
             )
         except Exception as e:  # noqa: BLE001
             logger.debug(f"Enregistrement usage échoué : {e}")
@@ -264,6 +268,7 @@ class OpenAILLMClient:
                     tokens_output=getattr(u, 'completion_tokens', 0) if u else 0,
                     tokens_total=getattr(u, 'total_tokens', 0) if u else 0,
                     duration=time.perf_counter() - t0,
+                    model=self.model,
                 )
             except Exception:  # noqa: BLE001
                 pass

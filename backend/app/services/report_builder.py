@@ -138,6 +138,8 @@ def _metrics_section(simulation: Any) -> List[str]:
         return []
     L = ["## 7. Métriques (durée & tokens)"]
     tot = metrics.get('totals', {})
+    if metrics.get('model'):
+        L.append(f"- **Modèle** : {metrics['model']}")
     L.append(f"- **Durée totale** : {metrics.get('total_duration_s', '—')} s · "
              f"**Tokens** : {tot.get('tokens_total', 0)} · "
              f"**Appels LLM** : {tot.get('llm_calls', 0)}"

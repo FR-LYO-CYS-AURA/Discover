@@ -21,10 +21,12 @@ class UsageTracker:
         self.tokens_total = 0
         self.cost = 0.0
         self.duration = 0.0  # secondes cumulées d'appels LLM
+        self.model = None    # dernier modèle utilisé (format "provider/model")
 
     def record(self, tokens_input: int = 0, tokens_output: int = 0,
                tokens_reasoning: int = 0, tokens_total: int = 0,
-               cost: float = 0.0, duration: float = 0.0) -> None:
+               cost: float = 0.0, duration: float = 0.0,
+               model: str = None) -> None:
         with self._lock:
             self.calls += 1
             self.tokens_input += int(tokens_input or 0)
@@ -36,6 +38,8 @@ class UsageTracker:
                 self.tokens_total += int(tokens_input or 0) + int(tokens_output or 0) + int(tokens_reasoning or 0)
             self.cost += float(cost or 0.0)
             self.duration += float(duration or 0.0)
+            if model:
+                self.model = model
 
     def snapshot(self) -> Dict[str, Any]:
         with self._lock:
@@ -47,6 +51,7 @@ class UsageTracker:
                 "tokens_total": self.tokens_total,
                 "cost": round(self.cost, 6),
                 "duration": round(self.duration, 3),
+                "model": self.model,
             }
 
     @staticmethod

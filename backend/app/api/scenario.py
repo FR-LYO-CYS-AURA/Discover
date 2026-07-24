@@ -45,6 +45,7 @@ def _run_extraction(scenario):
                 "tokens_input": snap["tokens_input"],
                 "tokens_output": snap["tokens_output"],
                 "cost": snap["cost"],
+                "model": snap.get("model"),
             }
         }
         ScenarioManager.set_graph(

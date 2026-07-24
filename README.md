@@ -230,10 +230,11 @@ La **consommation LLM est mesurée étape par étape** et affichée à chaque ni
 - **Simulation** : analyse experts, propagation, narration ;
 - **Trajectoires** : génération des 4 trajectoires.
 
-Chaque appel LLM (via OpenCode) fournit `tokens` et `cost` ; le pipeline attribue
-la consommation par étape (snapshot avant/après) et la stocke dans
-`Scenario.metrics` / `Simulation.metrics`. Le rapport exporté inclut une section
-« Métriques ».
+Chaque appel LLM (via OpenCode) fournit `tokens`, `cost` et le **modèle**
+(`providerID/modelID`) ; le pipeline attribue la consommation par étape (snapshot
+avant/après) et la stocke dans `Scenario.metrics` / `Simulation.metrics`. Le
+**modèle utilisé** est affiché dans le panneau Métriques (les 3 vues), le
+navigateur `/simulations` et la section « Métriques » du rapport exporté.
 
 **EN —** A completed simulation is fully **tab-navigable** (Graph · Simulation ·
 Trajectories · Report), including back to the crisis graph. All simulations are

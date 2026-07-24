@@ -125,6 +125,7 @@ def _run_simulation(simulation_id: str, task_id: str):
             "started_at": _dt.fromtimestamp(time.time() - (time.perf_counter() - wall0)).isoformat(),
             "ended_at": _dt.now().isoformat(),
             "total_duration_s": round(time.perf_counter() - wall0, 3),
+            "model": tracker.snapshot().get("model"),
             "steps": steps,
             "totals": _metrics_totals(steps),
         }
@@ -235,6 +236,7 @@ def list_simulations():
             "duration_s": (s.metrics or {}).get('total_duration_s'),
             "tokens_total": totals.get('tokens_total'),
             "cost": totals.get('cost'),
+            "model": (s.metrics or {}).get('model'),
         })
     return jsonify({"success": True, "data": items})
 
@@ -306,6 +308,8 @@ def _generate_trajectories(simulation_id: str, task_id: str):
         })
         metrics['steps'] = steps
         metrics['totals'] = _metrics_totals(steps)
+        if snap.get("model"):
+            metrics['model'] = snap.get("model")
         sim.metrics = metrics
         SimulationManager.save_simulation(sim)
         tm.complete_task(task_id, result={"simulation_id": simulation_id,

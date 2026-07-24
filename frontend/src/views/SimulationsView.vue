@@ -12,7 +12,7 @@
         <thead>
           <tr>
             <th>Titre</th><th>Scénario</th><th>Statut</th><th>Indice max</th>
-            <th>Durée</th><th>Tokens</th><th></th>
+            <th>Modèle</th><th>Durée</th><th>Tokens</th><th></th>
           </tr>
         </thead>
         <tbody>
@@ -34,6 +34,7 @@
               <span v-if="s.max_global_index != null" class="idx" :style="{ background: idxColor(s.max_global_index) }">{{ s.max_global_index }}</span>
               <span v-else class="muted">—</span>
             </td>
+            <td class="muted model">{{ s.model || '—' }}</td>
             <td class="muted">{{ fmtDur(s.duration_s) }}</td>
             <td class="muted">{{ s.tokens_total != null ? s.tokens_total.toLocaleString('fr-FR') : '—' }}</td>
             <td class="actions">
@@ -97,6 +98,7 @@ onMounted(load)
 .sims__table th { text-align: left; color: #9aa0a6; padding: 8px 10px; border-bottom: 1px solid #2a2d33; font-weight: 500; }
 .sims__table td { padding: 8px 10px; border-bottom: 1px solid #1a1d23; }
 .muted { color: #9aa0a6; }
+.model { font-size: 11px; }
 .title { cursor: pointer; font-weight: 600; }
 .title:hover { color: #6ba3cc; }
 .edit { background: #0f1115; border: 1px solid #457b9d; border-radius: 6px; color: #e8eaed; padding: 3px 6px; font-family: inherit; }

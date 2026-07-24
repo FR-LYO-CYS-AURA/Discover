@@ -83,6 +83,7 @@ const extractionMetrics = computed(() => {
   if (!ex) return null
   return {
     total_duration_s: ex.duration_s,
+    model: ex.model,
     steps: [{ name: 'extraction', duration_s: ex.duration_s, llm_calls: ex.llm_calls, tokens_total: ex.tokens_total }],
     totals: { llm_calls: ex.llm_calls, tokens_total: ex.tokens_total, cost: ex.cost },
   }

@@ -81,8 +81,8 @@ Si les trois répondent, l'application est prête.
 - Cliquer **« Lancer la simulation »**. Statuts : *Analyse experts → Propagation
   → Qualification → Terminée* (~1-2 min).
 - Attendu : **analyses par domaine**, **chaînes de propagation narrées**, graphe
-  avec **halo d'impact** rouge, et un **panneau Métriques** (durée + tokens par
-  étape : analyse experts / propagation / narration).
+  avec **halo d'impact** rouge, et un **panneau Métriques** (modèle LLM utilisé,
+  durée + tokens par étape : analyse experts / propagation / narration).
 - **Onglets** en haut (Graphe · Simulation · Trajectoires · Rapport) pour naviguer.
 - Bouton **« Trajectoires & scoring → »**.
 
