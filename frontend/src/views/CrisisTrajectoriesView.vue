@@ -21,6 +21,11 @@
     </div>
 
     <div v-if="trajectories.length" class="traj__body">
+      <!-- Métriques (dont l'étape trajectoires) -->
+      <section class="metrics-section" v-if="simMetrics && simMetrics.steps">
+        <MetricsPanel :metrics="simMetrics" />
+      </section>
+
       <!-- Décisions consolidées -->
       <section class="consolidated" v-if="consolidatedDecisions.length">
         <h3>Décisions prioritaires (consolidées)</h3>
@@ -109,6 +114,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import CrisisStepper from '../components/CrisisStepper.vue'
 import SimulationTabs from '../components/SimulationTabs.vue'
+import MetricsPanel from '../components/MetricsPanel.vue'
 import { getTrajectories, generateTrajectories, getTaskStatus, getSimulation } from '../api/simulation'
 
 const props = defineProps({ simulationId: { type: String, required: true } })
@@ -119,6 +125,7 @@ const trajectories = ref([])
 const generating = ref(false)
 const error = ref('')
 const scenarioId = ref('')
+const simMetrics = ref(null)
 let poll = null
 
 const domains = computed(() => {
@@ -171,6 +178,10 @@ async function load() {
     status.value = res.data.trajectories_status
     trajectories.value = res.data.trajectories || []
     if (status.value !== 'generating' && poll) { clearInterval(poll); poll = null; generating.value = false }
+    // rafraîchir les métriques (l'étape 'trajectoires' y est ajoutée après génération)
+    if (status.value === 'completed') {
+      try { simMetrics.value = (await getSimulation(props.simulationId)).data.metrics || simMetrics.value } catch (e) { /* ignore */ }
+    }
   } catch (e) {
     error.value = e?.message || 'Simulation introuvable.'
   }
@@ -207,6 +218,7 @@ onMounted(async () => {
   try {
     const s = await getSimulation(props.simulationId)
     scenarioId.value = s.data.scenario_id || ''
+    simMetrics.value = s.data.metrics || null
   } catch (e) { /* non bloquant */ }
   load()
 })
@@ -226,7 +238,7 @@ onUnmounted(() => { if (poll) clearInterval(poll) })
 .btn-ghost { background: #1a1d23; border: 1px solid #2a2d33; color: #e8eaed; border-radius: 8px; padding: 8px 14px; cursor: pointer; font-size: 13px; }
 
 .consolidated { margin-bottom: 28px; }
-.cons-list { display: flex; flex-direction: column; gap: 6px; }
+.metrics-section { margin-bottom: 28px; }.cons-list { display: flex; flex-direction: column; gap: 6px; }
 .cons { display: flex; align-items: center; gap: 10px; background: #1a1d23; border: 1px solid #2a2d33; border-radius: 8px; padding: 8px 12px; }
 .cons__rank { width: 20px; text-align: center; color: #9aa0a6; font-weight: 700; }
 .cons__bar { width: 90px; height: 5px; background: #2a2d33; border-radius: 3px; overflow: hidden; flex-shrink: 0; }

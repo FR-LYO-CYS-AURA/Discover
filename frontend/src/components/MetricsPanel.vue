@@ -30,6 +30,7 @@ const props = defineProps({ metrics: { type: Object, default: () => ({}) } })
 const totals = computed(() => props.metrics?.totals || {})
 
 const LABELS = {
+  extraction: 'Extraction graphe',
   analyse_experts: 'Analyse experts',
   propagation: 'Propagation domino',
   narration: 'Narration chaînes',

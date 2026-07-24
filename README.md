@@ -216,6 +216,34 @@ decisions (measures ranked by estimated effect).
 
 ---
 
+## Navigation & métriques / Navigation & metrics
+
+**FR —** Une simulation terminée est **entièrement navigable par onglets**
+(**Graphe · Simulation · Trajectoires · Rapport**) dans les deux sens, y compris
+le retour au graphe de crise. Toutes les simulations sont **persistées** et
+gérées depuis un **navigateur** (`/simulations`, lien « Mes simulations ») :
+titre **renommable**, statut, indice max, durée, tokens, avec rouvrir / renommer
+/ supprimer.
+
+La **consommation LLM est mesurée étape par étape** et affichée à chaque niveau :
+- **Intake / Graphe** : extraction du graphe (durée, tokens, coût) ;
+- **Simulation** : analyse experts, propagation, narration ;
+- **Trajectoires** : génération des 4 trajectoires.
+
+Chaque appel LLM (via OpenCode) fournit `tokens` et `cost` ; le pipeline attribue
+la consommation par étape (snapshot avant/après) et la stocke dans
+`Scenario.metrics` / `Simulation.metrics`. Le rapport exporté inclut une section
+« Métriques ».
+
+**EN —** A completed simulation is fully **tab-navigable** (Graph · Simulation ·
+Trajectories · Report), including back to the crisis graph. All simulations are
+persisted and managed from a **browser** (`/simulations`) with rename / reopen /
+delete. **Per-step LLM consumption** (tokens, duration, cost) is captured and
+shown at each stage (extraction, simulation, trajectories) and included in the
+exported report.
+
+---
+
 ## Stack technique / Tech stack
 
 - **Backend** : Python 3.11+, Flask, Zep Cloud

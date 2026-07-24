@@ -35,7 +35,7 @@ const tabs = computed(() => [
 
 function go(t) {
   if (!t.enabled || t.key === props.current) return
-  if (t.key === 'graph') router.push({ name: 'CrisisGraph', params: { scenarioId: scenarioId.value } })
+  if (t.key === 'graph') router.push({ name: 'CrisisGraph', params: { scenarioId: scenarioId.value }, query: { sim: props.simulationId } })
   else if (t.key === 'simulation') router.push({ name: 'CrisisSimulation', params: { simulationId: props.simulationId } })
   else if (t.key === 'trajectories') router.push({ name: 'CrisisTrajectories', params: { simulationId: props.simulationId } })
   else if (t.key === 'report') router.push({ name: 'CrisisReport', params: { simulationId: props.simulationId } })

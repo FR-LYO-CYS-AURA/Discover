@@ -7,7 +7,8 @@
         <span class="sep">/</span>
         <span class="scn-title">{{ scenario?.title || 'Scénario' }}</span>
       </div>
-      <CrisisStepper current="graph" :scenario-id="scenarioId" />
+      <CrisisStepper v-if="!simContext" current="graph" :scenario-id="scenarioId" />
+      <SimulationTabs v-else :simulation-id="simContext" current="graph" />
       <div class="graph-view__actions">
         <span v-if="scenario" :class="['badge', 'badge--' + scenario.status]">{{ statusLabel(scenario.status) }}</span>
         <button class="btn-ghost" :disabled="reextracting" @click="reextract">
@@ -34,6 +35,10 @@
           <div class="stat"><span class="stat__num">{{ edges.length }}</span><span class="stat__lbl">arêtes</span></div>
           <div class="stat"><span class="stat__num">{{ domainCount }}</span><span class="stat__lbl">domaines</span></div>
         </div>
+
+        <div class="side-block" v-if="extractionMetrics">
+          <MetricsPanel :metrics="extractionMetrics" />
+        </div>
         <div class="side-block">
           <h3>Description</h3>
           <p class="desc">{{ scenario?.description }}</p>
@@ -51,20 +56,37 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import CrisisGraph from '../components/CrisisGraph.vue'
 import CrisisStepper from '../components/CrisisStepper.vue'
+import SimulationTabs from '../components/SimulationTabs.vue'
+import MetricsPanel from '../components/MetricsPanel.vue'
 import { getScenario, extractScenario } from '../api/scenario'
 import { runSimulation } from '../api/simulation'
 
 const props = defineProps({ scenarioId: { type: String, required: true } })
 const router = useRouter()
+const route = useRoute()
 
 const scenario = ref(null)
 const loading = ref(true)
 const error = ref('')
 const reextracting = ref(false)
 const simulating = ref(false)
+
+// Contexte simulation (navigation par onglets depuis une simulation)
+const simContext = computed(() => route.query.sim || '')
+
+// Métriques d'extraction, mises au format MetricsPanel
+const extractionMetrics = computed(() => {
+  const ex = scenario.value?.metrics?.extraction
+  if (!ex) return null
+  return {
+    total_duration_s: ex.duration_s,
+    steps: [{ name: 'extraction', duration_s: ex.duration_s, llm_calls: ex.llm_calls, tokens_total: ex.tokens_total }],
+    totals: { llm_calls: ex.llm_calls, tokens_total: ex.tokens_total, cost: ex.cost },
+  }
+})
 
 const nodes = computed(() => scenario.value?.nodes || [])
 const edges = computed(() => scenario.value?.edges || [])
