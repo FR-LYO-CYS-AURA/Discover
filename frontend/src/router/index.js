@@ -4,6 +4,7 @@ import CrisisGraphView from '../views/CrisisGraphView.vue'
 import CrisisSimulationView from '../views/CrisisSimulationView.vue'
 import CrisisTrajectoriesView from '../views/CrisisTrajectoriesView.vue'
 import CrisisReportView from '../views/CrisisReportView.vue'
+import SimulationsView from '../views/SimulationsView.vue'
 
 // Routes DISCOVER (Phases 1-3). Les vues de la phase 4 (interaction) et v2
 // (what-if) seront ajoutées ensuite.
@@ -36,6 +37,11 @@ const routes = [
     name: 'CrisisReport',
     component: CrisisReportView,
     props: true,
+  },
+  {
+    path: '/simulations',
+    name: 'Simulations',
+    component: SimulationsView,
   },
 ]
 

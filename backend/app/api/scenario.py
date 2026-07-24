@@ -28,8 +28,25 @@ def _run_extraction(scenario):
     scenario.status = ScenarioStatus.EXTRACTING
     ScenarioManager.save_scenario(scenario)
     try:
-        extractor = CrisisGraphExtractor()
+        import time
+        from ..utils.usage import UsageTracker
+        from ..utils.llm_client import LLMClient
+        tracker = UsageTracker()
+        extractor = CrisisGraphExtractor(llm_client=LLMClient(usage_tracker=tracker))
+        t0 = time.perf_counter()
         result = extractor.extract(scenario.description, context=scenario.context)
+        duration = round(time.perf_counter() - t0, 3)
+        snap = tracker.snapshot()
+        scenario.metrics = {
+            "extraction": {
+                "duration_s": duration,
+                "llm_calls": snap["calls"],
+                "tokens_total": snap["tokens_total"],
+                "tokens_input": snap["tokens_input"],
+                "tokens_output": snap["tokens_output"],
+                "cost": snap["cost"],
+            }
+        }
         ScenarioManager.set_graph(
             scenario,
             nodes=result['nodes'],

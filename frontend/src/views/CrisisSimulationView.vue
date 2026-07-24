@@ -7,6 +7,7 @@
         <span>Simulation de crise</span>
       </div>
       <CrisisStepper current="simulation" :scenario-id="scenarioId" :simulation-id="simulationId" />
+      <SimulationTabs :simulation-id="simulationId" current="simulation" />
       <span :class="['badge', 'badge--' + (sim ? sim.status : 'created')]">{{ statusLabel }}</span>
       <button v-if="sim && sim.status === 'completed'" class="btn-primary" @click="goTrajectories">
         Trajectoires &amp; scoring →
@@ -24,6 +25,9 @@
       </div>
 
       <aside class="sim-view__side">
+        <div class="side-block" v-if="sim && sim.metrics && sim.metrics.steps">
+          <MetricsPanel :metrics="sim.metrics" />
+        </div>
         <div class="side-block">
           <h3>Chaînes de propagation ({{ chains.length }})</h3>
           <div v-if="!chains.length" class="muted">Aucune chaîne significative.</div>
@@ -70,6 +74,8 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import CrisisGraph from '../components/CrisisGraph.vue'
 import CrisisStepper from '../components/CrisisStepper.vue'
+import SimulationTabs from '../components/SimulationTabs.vue'
+import MetricsPanel from '../components/MetricsPanel.vue'
 import { getSimulation } from '../api/simulation'
 
 const props = defineProps({ simulationId: { type: String, required: true } })

@@ -41,6 +41,8 @@ class Simulation:
     created_at: str
     updated_at: str
 
+    title: str = ""
+
     active_domains: List[str] = field(default_factory=list)
     expert_analyses: List[Dict[str, Any]] = field(default_factory=list)   # ExpertAnalysis
     propagation_chains: List[Dict[str, Any]] = field(default_factory=list)  # PropagationChain
@@ -51,12 +53,16 @@ class Simulation:
     trajectories: List[Dict[str, Any]] = field(default_factory=list)     # 4 trajectoires + scores
     trajectories_status: str = "none"                                    # none|generating|completed|failed
 
+    # Métriques (tokens, coût, durée par étape)
+    metrics: Dict[str, Any] = field(default_factory=dict)
+
     error: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return {
             "simulation_id": self.simulation_id,
             "scenario_id": self.scenario_id,
+            "title": self.title,
             "status": self.status.value if isinstance(self.status, SimulationStatus) else self.status,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
@@ -67,6 +73,7 @@ class Simulation:
             "domain_scores": self.domain_scores,
             "trajectories": self.trajectories,
             "trajectories_status": self.trajectories_status,
+            "metrics": self.metrics,
             "error": self.error,
         }
 
@@ -78,6 +85,7 @@ class Simulation:
         return cls(
             simulation_id=data['simulation_id'],
             scenario_id=data['scenario_id'],
+            title=data.get('title', ''),
             status=status,
             created_at=data.get('created_at', ''),
             updated_at=data.get('updated_at', ''),
@@ -88,6 +96,7 @@ class Simulation:
             domain_scores=data.get('domain_scores', {}),
             trajectories=data.get('trajectories', []),
             trajectories_status=data.get('trajectories_status', 'none'),
+            metrics=data.get('metrics', {}),
             error=data.get('error'),
         )
 

@@ -6,6 +6,7 @@
         <span class="brand">DISCOVER</span><span class="sep">/</span>
         <span>Rapport de synthèse</span>
       </div>
+      <SimulationTabs :simulation-id="simulationId" current="report" />
       <div class="report__actions">
         <a class="btn-ghost" :href="downloadUrl" download>Télécharger .md</a>
         <button class="btn-primary" @click="print">Imprimer / PDF</button>
@@ -22,6 +23,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import SimulationTabs from '../components/SimulationTabs.vue'
 import { getReport, downloadReportUrl } from '../api/simulation'
 
 const props = defineProps({ simulationId: { type: String, required: true } })

@@ -14,6 +14,7 @@ inchangés.
 
 import json
 import re
+import time
 from typing import Optional, Dict, Any, List
 
 import httpx
@@ -81,6 +82,7 @@ class OpenCodeClient:
         username: Optional[str] = None,
         password: Optional[str] = None,
         timeout: float = 300.0,
+        usage_tracker: Optional[Any] = None,
     ):
         self.base_url = (base_url or Config.OPENCODE_SERVER_URL).rstrip('/')
         self.model = model if model is not None else Config.OPENCODE_MODEL
@@ -90,6 +92,7 @@ class OpenCodeClient:
         auth = (username or 'opencode', password) if password else None
         self.timeout = timeout
         self._auth = auth
+        self.usage_tracker = usage_tracker
 
     def _client(self) -> httpx.Client:
         return httpx.Client(base_url=self.base_url, timeout=self.timeout, auth=self._auth)
@@ -129,14 +132,34 @@ class OpenCodeClient:
             session.raise_for_status()
             session_id = session.json()['id']
             try:
+                t0 = time.perf_counter()
                 resp = client.post(f'/session/{session_id}/message', json=body)
                 resp.raise_for_status()
-                return resp.json()
+                data = resp.json()
+                self._record_usage(data, time.perf_counter() - t0)
+                return data
             finally:
                 try:
                     client.delete(f'/session/{session_id}')
                 except Exception as e:  # noqa: BLE001
                     logger.warning(f"Suppression de session OpenCode échouée ({session_id}): {e}")
+
+    def _record_usage(self, response: Dict[str, Any], duration: float) -> None:
+        if self.usage_tracker is None:
+            return
+        info = response.get('info') or {}
+        tk = info.get('tokens') or {}
+        try:
+            self.usage_tracker.record(
+                tokens_input=tk.get('input', 0),
+                tokens_output=tk.get('output', 0),
+                tokens_reasoning=tk.get('reasoning', 0),
+                tokens_total=tk.get('total', 0),
+                cost=info.get('cost', 0.0),
+                duration=duration,
+            )
+        except Exception as e:  # noqa: BLE001
+            logger.debug(f"Enregistrement usage échoué : {e}")
 
     @staticmethod
     def _extract_text(response: Dict[str, Any]) -> str:
@@ -206,10 +229,12 @@ class OpenAILLMClient:
         api_key: Optional[str] = None,
         base_url: Optional[str] = None,
         model: Optional[str] = None,
+        usage_tracker: Optional[Any] = None,
     ):
         self.api_key = api_key or Config.LLM_API_KEY
         self.base_url = base_url or Config.LLM_BASE_URL
         self.model = model or Config.LLM_MODEL_NAME
+        self.usage_tracker = usage_tracker
         if not self.api_key:
             raise ValueError("LLM_API_KEY non configurée")
         self.client = OpenAI(api_key=self.api_key, base_url=self.base_url)
@@ -229,7 +254,19 @@ class OpenAILLMClient:
         }
         if response_format:
             kwargs["response_format"] = response_format
+        t0 = time.perf_counter()
         response = self.client.chat.completions.create(**kwargs)
+        if self.usage_tracker is not None:
+            u = getattr(response, 'usage', None)
+            try:
+                self.usage_tracker.record(
+                    tokens_input=getattr(u, 'prompt_tokens', 0) if u else 0,
+                    tokens_output=getattr(u, 'completion_tokens', 0) if u else 0,
+                    tokens_total=getattr(u, 'total_tokens', 0) if u else 0,
+                    duration=time.perf_counter() - t0,
+                )
+            except Exception:  # noqa: BLE001
+                pass
         return _strip_think(response.choices[0].message.content)
 
     def chat_json(

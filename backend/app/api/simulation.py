@@ -45,8 +45,24 @@ def _aggregate_domain_scores(expert_analyses):
     return scores
 
 
+def _metrics_totals(steps):
+    """Calcule les totaux à partir des étapes."""
+    return {
+        "llm_calls": sum(s.get('llm_calls', 0) for s in steps),
+        "tokens_total": sum(s.get('tokens_total', 0) for s in steps),
+        "tokens_input": sum(s.get('tokens_input', 0) for s in steps),
+        "tokens_output": sum(s.get('tokens_output', 0) for s in steps),
+        "cost": round(sum(s.get('cost', 0.0) for s in steps), 6),
+    }
+
+
 def _run_simulation(simulation_id: str, task_id: str):
     """Pipeline : experts -> domino -> narration. Exécuté en thread daemon."""
+    import time
+    from datetime import datetime as _dt
+    from ..utils.usage import UsageTracker
+    from ..utils.llm_client import LLMClient
+
     tm = TaskManager()
     sim = SimulationManager.get_simulation(simulation_id)
     if not sim:
@@ -60,37 +76,63 @@ def _run_simulation(simulation_id: str, task_id: str):
         tm.fail_task(task_id, sim.error)
         return
 
+    tracker = UsageTracker()
+    client = LLMClient(usage_tracker=tracker)
+    steps = []
+    wall0 = time.perf_counter()
+
+    def run_step(name, fn):
+        t0 = time.perf_counter()
+        snap0 = tracker.snapshot()
+        out = fn()
+        d = UsageTracker.delta(tracker.snapshot(), snap0)
+        steps.append({"name": name, "duration_s": round(time.perf_counter() - t0, 3), **d})
+        return out
+
     try:
         # 1) Société d'agents experts
         sim.status = SimulationStatus.ANALYZING
         SimulationManager.save_simulation(sim)
         tm.update_task(task_id, status=TaskStatus.PROCESSING, progress=10,
                        message="Analyse par les agents experts")
-        society = ExpertSociety()
+        society = ExpertSociety(llm_client=client)
         active = society.select_domains(scenario.nodes)
         sim.active_domains = active
-        analyses = society.analyze(scenario.description, scenario.nodes, scenario.edges, domains=active)
+        analyses = run_step("analyse_experts",
+                            lambda: society.analyze(scenario.description, scenario.nodes,
+                                                    scenario.edges, domains=active))
         sim.expert_analyses = analyses
         sim.domain_scores = _aggregate_domain_scores(analyses)
         SimulationManager.save_simulation(sim)
 
-        # 2) Moteur d'effets domino (déterministe + narration)
+        # 2) Moteur d'effets domino (déterministe puis narration)
+        engine = DominoEngine(llm_client=client)
         sim.status = SimulationStatus.PROPAGATING
         SimulationManager.save_simulation(sim)
-        tm.update_task(task_id, progress=65, message="Propagation des effets domino")
-        engine = DominoEngine()
+        tm.update_task(task_id, progress=60, message="Propagation des effets domino")
+        result = run_step("propagation",
+                         lambda: engine.propagate(scenario.nodes, scenario.edges,
+                                                  analyses, narrate=False))
         sim.status = SimulationStatus.NARRATING
         SimulationManager.save_simulation(sim)
         tm.update_task(task_id, progress=85, message="Qualification des chaînes de propagation")
-        result = engine.propagate(scenario.nodes, scenario.edges, analyses, narrate=True)
+        run_step("narration", lambda: engine._narrate(result['chains']))
+
         sim.propagated_graph = {"nodes": result["nodes"], "edges": result["edges"]}
         sim.propagation_chains = result["chains"]
 
+        sim.metrics = {
+            "started_at": _dt.fromtimestamp(time.time() - (time.perf_counter() - wall0)).isoformat(),
+            "ended_at": _dt.now().isoformat(),
+            "total_duration_s": round(time.perf_counter() - wall0, 3),
+            "steps": steps,
+            "totals": _metrics_totals(steps),
+        }
         sim.status = SimulationStatus.COMPLETED
         SimulationManager.save_simulation(sim)
         tm.complete_task(task_id, result={"simulation_id": simulation_id})
-        logger.info(f"Simulation {simulation_id} terminée : "
-                    f"{len(analyses)} analyses, {len(result['chains'])} chaînes")
+        logger.info(f"Simulation {simulation_id} terminée : {len(analyses)} analyses, "
+                    f"{len(result['chains'])} chaînes, {sim.metrics['totals']['tokens_total']} tokens")
     except Exception as e:  # noqa: BLE001
         logger.error(f"Simulation {simulation_id} échouée : {e}\n{traceback.format_exc()}")
         sim.status = SimulationStatus.FAILED
@@ -114,6 +156,10 @@ def run_simulation():
         return jsonify({"success": False, "error": "Le graphe de crise n'est pas encore extrait"}), 400
 
     sim = SimulationManager.create_simulation(scenario_id)
+    # titre par défaut : titre du scénario + horodatage
+    from datetime import datetime as _dt
+    sim.title = f"{scenario.title} — {_dt.now().strftime('%d/%m %H:%M')}"
+    SimulationManager.save_simulation(sim)
     task_id = TaskManager().create_task(task_type="crisis_simulation",
                                         metadata={"simulation_id": sim.simulation_id})
     threading.Thread(target=_run_simulation, args=(sim.simulation_id, task_id),
@@ -161,15 +207,50 @@ def list_simulations():
     scenario_id = request.args.get('scenario_id')
     limit = request.args.get('limit', 50, type=int)
     sims = SimulationManager.list_simulations(scenario_id=scenario_id, limit=limit)
-    items = [{
-        "simulation_id": s.simulation_id,
-        "scenario_id": s.scenario_id,
-        "status": s.status.value,
-        "created_at": s.created_at,
-        "active_domains": s.active_domains,
-        "chains_count": len(s.propagation_chains),
-    } for s in sims]
+    # cache des titres de scénario
+    scn_titles = {}
+    items = []
+    for s in sims:
+        if s.scenario_id not in scn_titles:
+            scn = ScenarioManager.get_scenario(s.scenario_id)
+            scn_titles[s.scenario_id] = scn.title if scn else s.scenario_id
+        totals = (s.metrics or {}).get('totals', {})
+        # indice global max des trajectoires (si présentes)
+        max_index = None
+        if s.trajectories:
+            vals = [t.get('scores', {}).get('global_index') for t in s.trajectories]
+            vals = [v for v in vals if v is not None]
+            max_index = max(vals) if vals else None
+        items.append({
+            "simulation_id": s.simulation_id,
+            "scenario_id": s.scenario_id,
+            "scenario_title": scn_titles[s.scenario_id],
+            "title": s.title or scn_titles[s.scenario_id],
+            "status": s.status.value,
+            "trajectories_status": s.trajectories_status,
+            "created_at": s.created_at,
+            "active_domains": s.active_domains,
+            "chains_count": len(s.propagation_chains),
+            "max_global_index": max_index,
+            "duration_s": (s.metrics or {}).get('total_duration_s'),
+            "tokens_total": totals.get('tokens_total'),
+            "cost": totals.get('cost'),
+        })
     return jsonify({"success": True, "data": items})
+
+
+@simulation_bp.route('/<simulation_id>', methods=['PATCH'])
+def rename_simulation(simulation_id: str):
+    sim = SimulationManager.get_simulation(simulation_id)
+    if not sim:
+        return jsonify({"success": False, "error": f"Simulation introuvable: {simulation_id}"}), 404
+    data = request.get_json(silent=True) or {}
+    title = (data.get('title') or '').strip()
+    if not title:
+        return jsonify({"success": False, "error": "Le champ 'title' est requis"}), 400
+    sim.title = title[:120]
+    SimulationManager.save_simulation(sim)
+    return jsonify({"success": True, "data": {"simulation_id": simulation_id, "title": sim.title}})
 
 
 @simulation_bp.route('/<simulation_id>', methods=['DELETE'])
@@ -196,15 +277,36 @@ def _generate_trajectories(simulation_id: str, task_id: str):
         tm.fail_task(task_id, "Scénario introuvable")
         return
     try:
+        import time
+        from ..utils.usage import UsageTracker
+        from ..utils.llm_client import LLMClient
         sim.trajectories_status = "generating"
         SimulationManager.save_simulation(sim)
         tm.update_task(task_id, status=TaskStatus.PROCESSING, progress=20,
                        message="Génération des trajectoires")
-        gen = TrajectoryGenerator()
+        tracker = UsageTracker()
+        gen = TrajectoryGenerator(llm_client=LLMClient(usage_tracker=tracker))
+        t0 = time.perf_counter()
         trajectories = gen.generate(scenario.description, scenario.nodes,
                                     scenario.edges, sim.expert_analyses)
+        snap = tracker.snapshot()
         sim.trajectories = trajectories
         sim.trajectories_status = "completed"
+        # ajoute l'étape trajectoires aux métriques
+        metrics = sim.metrics or {}
+        steps = metrics.get('steps', [])
+        steps.append({
+            "name": "trajectoires",
+            "duration_s": round(time.perf_counter() - t0, 3),
+            "llm_calls": snap["calls"],
+            "tokens_total": snap["tokens_total"],
+            "tokens_input": snap["tokens_input"],
+            "tokens_output": snap["tokens_output"],
+            "cost": snap["cost"],
+        })
+        metrics['steps'] = steps
+        metrics['totals'] = _metrics_totals(steps)
+        sim.metrics = metrics
         SimulationManager.save_simulation(sim)
         tm.complete_task(task_id, result={"simulation_id": simulation_id,
                                            "count": len(trajectories)})

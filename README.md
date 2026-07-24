@@ -119,6 +119,7 @@ Services : LLM via OpenCode (defaut) ou API compatible OpenAI . Zep Cloud (graph
 | `scoring_engine` | **Intégré / Integrated** | Scoring conséquences (domaine 1-5, indice 0-100) + décisions / Consequence + decision scoring |
 | `report_builder` | **Intégré / Integrated** | Rapport de synthèse Markdown (contexte, analyses, chaînes, trajectoires, décisions) / Markdown synthesis report |
 | Parcours & historique (frontend) | **Intégré / Integrated** | Fil d'Ariane, reprise, aperçu imprimable / Stepper, resume, printable preview |
+| Navigation & métriques | **Intégré / Integrated** | Onglets, navigateur de simulations (renommer/rouvrir), tokens & durée par étape / Tabs, simulations browser, per-step tokens & duration |
 | Visualisation D3 (causes/conséquences) | Réutilisé / Reused | Graphe de propagation temps réel / Real-time propagation graph |
 | `whatif_engine` | v2 (après POC / after POC) | Hypothèses & effets instantanés / Hypotheses & instant effects |
 

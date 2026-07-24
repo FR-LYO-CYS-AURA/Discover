@@ -5,6 +5,7 @@
         <span class="brand__name">DISCOVER</span>
         <span class="brand__tag">Simulation de risques, crises & exercices</span>
       </div>
+      <router-link class="header-link" :to="{ name: 'Simulations' }">Mes simulations →</router-link>
     </header>
 
     <main class="intake__main">
@@ -229,6 +230,8 @@ onMounted(() => {
   padding: 18px 32px; border-bottom: 1px solid #23262c;
   display: flex; align-items: center;
 }
+.header-link { margin-left: auto; color: #457b9d; text-decoration: none; font-size: 14px; }
+.header-link:hover { color: #6ba3cc; }
 .brand__name { font-weight: 800; letter-spacing: 2px; font-size: 20px; }
 .brand__tag { margin-left: 14px; color: #9aa0a6; font-size: 13px; }
 

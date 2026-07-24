@@ -7,6 +7,7 @@
         <span>Trajectoires & scoring</span>
       </div>
       <CrisisStepper current="trajectories" :scenario-id="scenarioId" :simulation-id="simulationId" />
+      <SimulationTabs :simulation-id="simulationId" current="trajectories" />
       <button v-if="trajectories.length" class="btn-ghost" @click="goReport">Rapport</button>
       <button v-if="status === 'none' || status === 'failed'" class="btn-primary"
               :disabled="generating" @click="launch">
@@ -107,6 +108,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import CrisisStepper from '../components/CrisisStepper.vue'
+import SimulationTabs from '../components/SimulationTabs.vue'
 import { getTrajectories, generateTrajectories, getTaskStatus, getSimulation } from '../api/simulation'
 
 const props = defineProps({ simulationId: { type: String, required: true } })

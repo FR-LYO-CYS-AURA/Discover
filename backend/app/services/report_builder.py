@@ -122,7 +122,31 @@ def build_markdown(scenario: Any, simulation: Any) -> str:
                          f"{d['domain_label']} | {', '.join(d['trajectories'])} |")
             L.append("")
 
+    # Métriques (durée & tokens)
+    L.extend(_metrics_section(simulation))
+
     L.append("---")
     L.append("*DISCOVER — Simulation de risques, crises et exercices. "
              "Ce rapport est un support d'aide à la décision / d'exercice.*")
     return "\n".join(L)
+
+
+def _metrics_section(simulation: Any) -> List[str]:
+    metrics = getattr(simulation, 'metrics', {}) or {}
+    steps = metrics.get('steps', [])
+    if not steps:
+        return []
+    L = ["## 7. Métriques (durée & tokens)"]
+    tot = metrics.get('totals', {})
+    L.append(f"- **Durée totale** : {metrics.get('total_duration_s', '—')} s · "
+             f"**Tokens** : {tot.get('tokens_total', 0)} · "
+             f"**Appels LLM** : {tot.get('llm_calls', 0)}"
+             + (f" · **Coût** : {tot.get('cost')}" if tot.get('cost') else ""))
+    L.append("")
+    L.append("| Étape | Durée (s) | Appels | Tokens |")
+    L.append("|---|---|---|---|")
+    for s in steps:
+        L.append(f"| {s.get('name')} | {s.get('duration_s', '—')} | "
+                 f"{s.get('llm_calls', 0)} | {s.get('tokens_total', 0)} |")
+    L.append("")
+    return L

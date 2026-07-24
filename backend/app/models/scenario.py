@@ -45,6 +45,9 @@ class Scenario:
     edges: List[Dict[str, Any]] = field(default_factory=list)  # CrisisEdge
     analysis_summary: Optional[str] = None
 
+    # Métriques d'extraction (durée, tokens)
+    metrics: Dict[str, Any] = field(default_factory=dict)
+
     # Erreur éventuelle
     error: Optional[str] = None
 
@@ -60,6 +63,7 @@ class Scenario:
             "nodes": self.nodes,
             "edges": self.edges,
             "analysis_summary": self.analysis_summary,
+            "metrics": self.metrics,
             "error": self.error,
         }
 
@@ -79,6 +83,7 @@ class Scenario:
             nodes=data.get('nodes', []),
             edges=data.get('edges', []),
             analysis_summary=data.get('analysis_summary'),
+            metrics=data.get('metrics', {}),
             error=data.get('error'),
         )
 

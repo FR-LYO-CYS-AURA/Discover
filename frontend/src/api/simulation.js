@@ -26,6 +26,10 @@ export function deleteSimulation(simulationId) {
   return service.delete(`/api/simulation/${simulationId}`)
 }
 
+export function renameSimulation(simulationId, title) {
+  return service.patch(`/api/simulation/${simulationId}`, { title })
+}
+
 // --- Trajectoires (Phase 3) ---
 export function generateTrajectories(simulationId) {
   return service.post(`/api/simulation/${simulationId}/trajectories`)
