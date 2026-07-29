@@ -3,8 +3,7 @@ Modèle de scénario de crise DISCOVER.
 
 Un Scenario porte la description en langage naturel fournie par le décideur,
 et le graphe de crise extrait (actifs/acteurs + interdépendances pondérées).
-Persistance JSON sur disque (un dossier par scénario), sur le modèle de
-ProjectManager du socle MiroFish.
+Persistance JSON sur disque (un dossier par scénario).
 """
 
 import os

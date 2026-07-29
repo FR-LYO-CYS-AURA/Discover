@@ -54,17 +54,8 @@ class Config:
     LLM_BOOST_BASE_URL = os.environ.get('LLM_BOOST_BASE_URL')
     LLM_BOOST_MODEL_NAME = os.environ.get('LLM_BOOST_MODEL_NAME')
 
-    # Zep (graphe d'interdépendances / mémoire GraphRAG)
-    ZEP_API_KEY = os.environ.get('ZEP_API_KEY')
-
-    # Upload de fichiers (documents seed décrivant la crise / le contexte)
-    MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50 Mo
+    # Répertoire racine de persistance (scénarios, simulations)
     UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), '../uploads')
-    ALLOWED_EXTENSIONS = {'pdf', 'md', 'txt', 'markdown'}
-
-    # Prétraitement de texte
-    DEFAULT_CHUNK_SIZE = 500
-    DEFAULT_CHUNK_OVERLAP = 50
 
     # ---- Paramètres DISCOVER (Phases 2-4) ----
     # Domaines d'experts (société d'agents), alignés sur les 9 familles de risque

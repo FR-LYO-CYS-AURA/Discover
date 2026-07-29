@@ -8,7 +8,7 @@ Deux backends sélectionnables via Config.LLM_BACKEND :
   - "openai" : appel direct au format OpenAI (rétro-compatibilité).
 
 L'interface publique (chat / chat_json) est identique quel que soit le backend,
-afin que les services (crisis_graph_extractor, ontology_generator...) restent
+afin que les services (crisis_graph_extractor, expert_society...) restent
 inchangés.
 """
 
