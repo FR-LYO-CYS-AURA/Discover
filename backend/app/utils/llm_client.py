@@ -45,6 +45,28 @@ def _clean_json_text(text: str) -> str:
     return cleaned.strip()
 
 
+def _loads_dict(text: str) -> Dict[str, Any]:
+    """
+    Parse un texte JSON et garantit un objet (dict).
+
+    Contrat de chat_json : les appelants (expert_society, crisis_graph_extractor,
+    domino_engine, trajectory_generator) attendent tous un dict et font `raw.get()`.
+    Un JSON valide mais non-objet (chaîne, liste, nombre) provoquait un
+    `'str' object has no attribute 'get'`. On lève ici un ValueError explicite
+    pour déclencher proprement le fallback des appelants.
+
+    Raises:
+        json.JSONDecodeError si le texte n'est pas du JSON valide.
+        ValueError si le JSON est valide mais n'est pas un objet.
+    """
+    obj = json.loads(_clean_json_text(text))
+    if not isinstance(obj, dict):
+        logger.debug(f"chat_json: réponse JSON non-objet ({type(obj).__name__}) : {text!r}")
+        raise ValueError(f"réponse JSON non-objet ({type(obj).__name__})")
+    return obj
+
+
+
 def _messages_to_prompt(messages: List[Dict[str, str]]) -> Dict[str, str]:
     """
     Convertit une liste de messages OpenAI en (system, prompt) pour OpenCode.
@@ -200,18 +222,18 @@ class OpenCodeClient:
             text = self._extract_text(response)
             if text:
                 try:
-                    return json.loads(_clean_json_text(text))
-                except json.JSONDecodeError:
+                    return _loads_dict(text)
+                except (json.JSONDecodeError, ValueError):
                     pass
             raise ValueError("OpenCode n'a pas produit de sortie structurée valide")
 
         # Voie 2 : prompt libre + parsing (compat. sans schéma)
         response = self._prompt(messages)
-        text = _clean_json_text(self._extract_text(response))
+        text = self._extract_text(response)
         try:
-            return json.loads(text)
-        except json.JSONDecodeError:
-            raise ValueError(f"JSON invalide renvoyé par OpenCode: {text}")
+            return _loads_dict(text)
+        except (json.JSONDecodeError, ValueError) as e:
+            raise ValueError(f"JSON invalide renvoyé par OpenCode: {e}")
 
     def health(self) -> bool:
         try:
@@ -289,9 +311,9 @@ class OpenAILLMClient:
         )
         cleaned = _clean_json_text(response)
         try:
-            return json.loads(cleaned)
-        except json.JSONDecodeError:
-            raise ValueError(f"JSON invalide renvoyé par le LLM: {cleaned}")
+            return _loads_dict(cleaned)
+        except (json.JSONDecodeError, ValueError) as e:
+            raise ValueError(f"JSON invalide renvoyé par le LLM: {e}")
 
 
 # --------------------------------------------------------------------------- #

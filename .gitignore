@@ -2,7 +2,6 @@
 .DS_Store
 Thumbs.db
 
-# 环境变量（保护敏感信息）
 .env
 .env.local
 .env.*.local
@@ -36,7 +35,6 @@ yarn-error.log*
 *.swp
 *.swo
 
-# 测试
 .pytest_cache/
 .coverage
 htmlcov/
@@ -45,18 +43,15 @@ htmlcov/
 .cursor/
 .claude/
 
-# 文档与测试程序
 mydoc/
 mytest/
 
-# 日志文件
 backend/logs/
 *.log
 
-# 上传文件
 backend/uploads/
 
-# Docker 数据 (répertoire de données Docker à la racine uniquement)
+# Docker (répertoire de données Docker à la racine uniquement)
 /data/docker/
 
 # Le référentiel de risques doit être versionné
