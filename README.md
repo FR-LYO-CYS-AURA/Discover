@@ -245,6 +245,46 @@ exported report.
 
 ---
 
+## Trace d'exécution / Execution trace
+
+**FR —** Pour comprendre **quels fichiers et fonctions du backend sont réellement
+sollicités** lors d'une action, DISCOVER embarque un **traceur d'exécution** optionnel
+(`backend/app/utils/exec_tracer.py`). Basé sur `sys.setprofile` + `threading.setprofile`
+(compatible avec les tâches asynchrones), il est **filtré sur le package `app/`**,
+**désactivé par défaut** (aucun surcoût) et écrit dans un fichier dédié
+`backend/logs/trace-AAAA-MM-JJ.log`, séparé des logs applicatifs.
+
+Il produit trois niveaux d'information :
+
+1. **Arbre d'appels chronologique** par scope (requête HTTP *et* tâche de fond),
+   ex. `→ services/expert_society.py:analyze:231`.
+2. **Récapitulatif par scope** : liste **dédupliquée** des fichiers utilisés + nombre
+   d'appels (`--- Fichiers utilisés — simulation:sim_xxx (N fichiers, M appels) ---`).
+3. **Récapitulatif global** de session : inventaire dédupliqué de tous les fichiers
+   `app/` sollicités, disponible **à la demande** via `GET /api/trace/summary` (JSON) et
+   **à l'arrêt** du backend.
+
+Activation dans `.env` :
+
+```bash
+TRACE_EXECUTION=true          # active la trace (défaut : false)
+TRACE_INCLUDE_RETURNS=false   # inclure les retours (←) + durée par fonction
+TRACE_MAX_DEPTH=0             # profondeur max d'appels (0 = illimité)
+TRACE_SUMMARY=true            # écrire les récapitulatifs dédupliqués
+TRACE_SUMMARY_MIN_FILES=1     # seuil anti-bruit des récaps de scope
+```
+
+**EN —** DISCOVER ships an optional **execution tracer** (`backend/app/utils/exec_tracer.py`)
+to understand **which backend files/functions are actually exercised** per action. Built on
+`sys.setprofile` + `threading.setprofile` (async-safe), filtered to the `app/` package,
+**disabled by default** and written to a dedicated `backend/logs/trace-*.log`. It provides a
+chronological call tree, a **per-scope deduplicated file summary** (with call counts, for HTTP
+requests and background tasks), and a **global session summary** available on demand via
+`GET /api/trace/summary` and at shutdown. Configured through the `TRACE_*` variables above
+(see `.env.example`).
+
+---
+
 ## Stack technique / Tech stack
 
 - **Backend** : Python 3.11+, Flask, Zep Cloud

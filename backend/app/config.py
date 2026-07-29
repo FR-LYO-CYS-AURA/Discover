@@ -81,6 +81,21 @@ class Config:
     # Répertoire de données des simulations DISCOVER
     SIMULATION_DATA_DIR = os.path.join(os.path.dirname(__file__), '../uploads/simulations')
 
+    # ---- Trace d'exécution (debug/pédagogie) ----
+    # Active la trace des fichiers/fonctions du package app/ réellement exécutés,
+    # dans un fichier dédié backend/logs/trace-AAAA-MM-JJ.log. Désactivée par
+    # défaut (aucun surcoût). Voir app/utils/exec_tracer.py.
+    TRACE_EXECUTION = os.environ.get('TRACE_EXECUTION', 'false').lower() == 'true'
+    # Inclure aussi les événements de retour (←) avec durée par fonction.
+    TRACE_INCLUDE_RETURNS = os.environ.get('TRACE_INCLUDE_RETURNS', 'false').lower() == 'true'
+    # Profondeur maximale d'appels tracée (0 = illimité).
+    TRACE_MAX_DEPTH = int(os.environ.get('TRACE_MAX_DEPTH', '0') or 0)
+    # Écrire les blocs de récapitulatif dédupliqué des fichiers utilisés
+    # (par scope + global via GET /api/trace/summary et à l'arrêt).
+    TRACE_SUMMARY = os.environ.get('TRACE_SUMMARY', 'true').lower() == 'true'
+    # Seuil anti-bruit : n'émet un récap de scope que si ≥ N fichiers distincts.
+    TRACE_SUMMARY_MIN_FILES = int(os.environ.get('TRACE_SUMMARY_MIN_FILES', '1') or 1)
+
     @classmethod
     def validate(cls) -> list[str]:
         """Valide la configuration requise selon le backend LLM."""

@@ -30,6 +30,15 @@ def create_app(config_class=Config):
 
     logger = setup_logger(APP_NAME)
 
+    # Trace d'exécution optionnelle (TRACE_EXECUTION=true) : pose le hook le plus
+    # tôt possible pour couvrir le thread principal et les threads workers.
+    try:
+        from .utils import exec_tracer
+        if exec_tracer.install():
+            logger.info("Trace d'exécution activée -> logs/trace-*.log")
+    except Exception as e:  # noqa: BLE001
+        logger.warning(f"Initialisation de la trace d'exécution échouée : {e}")
+
     # N'afficher les logs de démarrage qu'une fois (évite le double affichage en mode debug).
     is_reloader_process = os.environ.get('WERKZEUG_RUN_MAIN') == 'true'
     debug_mode = app.config.get('DEBUG', False)
@@ -62,11 +71,22 @@ def create_app(config_class=Config):
         rlogger.debug(f"Requête: {request.method} {request.path}")
         if request.content_type and 'json' in request.content_type:
             rlogger.debug(f"Corps: {request.get_json(silent=True)}")
+        # Tague la trace d'exécution avec l'action HTTP courante.
+        try:
+            from .utils import exec_tracer
+            exec_tracer.set_request_context(f"{request.method} {request.path}")
+        except Exception:  # noqa: BLE001
+            pass
 
     @app.after_request
     def log_response(response):
         rlogger = get_logger(f'{APP_NAME}.request')
         rlogger.debug(f"Réponse: {response.status_code}")
+        try:
+            from .utils import exec_tracer
+            exec_tracer.clear_request_context()
+        except Exception:  # noqa: BLE001
+            pass
         return response
 
     # Blueprints (Phase 1-2 : graphe + scénarios + référentiel + simulation)
@@ -80,6 +100,18 @@ def create_app(config_class=Config):
     @app.route('/health')
     def health():
         return {'status': 'ok', 'service': 'DISCOVER Backend'}
+
+    # Récapitulatif de la trace d'exécution (uniquement si la trace est active).
+    # Renvoie la liste dédupliquée des fichiers app/ utilisés + nb d'appels, et
+    # écrit également le bloc récap global dans logs/trace-*.log.
+    try:
+        from .utils import exec_tracer
+        if exec_tracer.is_enabled():
+            @app.route('/api/trace/summary')
+            def trace_summary():
+                return {'success': True, 'data': exec_tracer.dump_summary('on-demand')}
+    except Exception as e:  # noqa: BLE001
+        logger.warning(f"Route /api/trace/summary non enregistrée : {e}")
 
     if should_log_startup:
         logger.info("DISCOVER Backend - prêt")

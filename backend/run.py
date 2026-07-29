@@ -33,8 +33,16 @@ def main():
         print("\n请检查 .env 文件中的配置")
         sys.exit(1)
     
-    # 创建应用
+    # Créer l'application
     app = create_app()
+
+    # Filet de sécurité : garantit que le hook de trace (si activé) est posé
+    # avant la création des threads workers du serveur (Flask threaded=True).
+    try:
+        from app.utils import exec_tracer
+        exec_tracer.install()
+    except Exception:  # noqa: BLE001
+        pass
     
     # 获取运行配置
     host = os.environ.get('FLASK_HOST', '0.0.0.0')

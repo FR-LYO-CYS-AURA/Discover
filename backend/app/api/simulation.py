@@ -25,8 +25,15 @@ from ..models.scenario import ScenarioManager
 from ..models.simulation import SimulationManager, SimulationStatus
 from ..models.task import TaskManager, TaskStatus
 from ..utils.logger import get_logger
+from ..utils import exec_tracer
 
 logger = get_logger('discover.api.simulation')
+
+
+def _run_in_scope(fn, label: str, *args):
+    """Exécute une tâche de fond dans un scope de trace dédié (récap fichiers)."""
+    with exec_tracer.traced_scope(label):
+        fn(*args)
 
 
 def _aggregate_domain_scores(expert_analyses):
@@ -163,7 +170,9 @@ def run_simulation():
     SimulationManager.save_simulation(sim)
     task_id = TaskManager().create_task(task_type="crisis_simulation",
                                         metadata={"simulation_id": sim.simulation_id})
-    threading.Thread(target=_run_simulation, args=(sim.simulation_id, task_id),
+    threading.Thread(target=_run_in_scope,
+                     args=(_run_simulation, f"simulation:{sim.simulation_id}",
+                           sim.simulation_id, task_id),
                      daemon=True).start()
     return jsonify({"success": True, "data": {
         "simulation_id": sim.simulation_id, "task_id": task_id,
@@ -334,7 +343,9 @@ def generate_trajectories(simulation_id: str):
         return jsonify({"success": False, "error": "La simulation n'est pas terminée"}), 400
     task_id = TaskManager().create_task(task_type="crisis_trajectories",
                                         metadata={"simulation_id": simulation_id})
-    threading.Thread(target=_generate_trajectories, args=(simulation_id, task_id),
+    threading.Thread(target=_run_in_scope,
+                     args=(_generate_trajectories, f"trajectories:{simulation_id}",
+                           simulation_id, task_id),
                      daemon=True).start()
     return jsonify({"success": True, "data": {"simulation_id": simulation_id, "task_id": task_id}})
 
