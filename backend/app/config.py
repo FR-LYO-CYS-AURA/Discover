@@ -4,6 +4,7 @@ Charge la configuration depuis le fichier .env à la racine du projet.
 """
 
 import os
+from urllib.parse import urlparse
 from dotenv import load_dotenv
 
 # Charge le .env à la racine du projet
@@ -15,6 +16,20 @@ if os.path.exists(project_root_env):
 else:
     # Sinon, on tente les variables d'environnement (production)
     load_dotenv(override=True)
+
+
+def trust_env_for(url: str) -> bool:
+    """
+    Indique si httpx doit lire les variables d'environnement (proxy) pour cette URL.
+
+    Retourne False quand la cible est locale (loopback) : cela évite qu'un proxy
+    d'entreprise (HTTP_PROXY/HTTPS_PROXY défini sans NO_PROXY) n'intercepte le
+    trafic vers le serveur OpenCode local, ce qui provoque des timeouts.
+    Une cible distante (OPENCODE_SERVER_URL externe) continue d'utiliser le proxy.
+    """
+    host = (urlparse(url).hostname or '').lower()
+    return host not in ('127.0.0.1', 'localhost', '::1', '0.0.0.0')
+
 
 
 class Config:
@@ -106,7 +121,9 @@ class Config:
         # opencode : vérifie la santé du serveur
         try:
             import httpx
-            r = httpx.get(f"{cls.OPENCODE_SERVER_URL.rstrip('/')}/global/health", timeout=5)
+            url = cls.OPENCODE_SERVER_URL.rstrip('/')
+            r = httpx.get(f"{url}/global/health", timeout=5,
+                          trust_env=trust_env_for(url))
             return r.status_code == 200 and bool(r.json().get('healthy'))
         except Exception:  # noqa: BLE001
             return False

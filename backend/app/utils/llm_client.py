@@ -20,7 +20,7 @@ from typing import Optional, Dict, Any, List
 import httpx
 from openai import OpenAI
 
-from ..config import Config
+from ..config import Config, trust_env_for
 from .logger import get_logger
 
 logger = get_logger('discover.llm_client')
@@ -117,7 +117,8 @@ class OpenCodeClient:
         self.usage_tracker = usage_tracker
 
     def _client(self) -> httpx.Client:
-        return httpx.Client(base_url=self.base_url, timeout=self.timeout, auth=self._auth)
+        return httpx.Client(base_url=self.base_url, timeout=self.timeout,
+                            auth=self._auth, trust_env=trust_env_for(self.base_url))
 
     def _model_obj(self) -> Optional[Dict[str, str]]:
         """Parse OPENCODE_MODEL 'providerID/modelID' -> {providerID, modelID}."""

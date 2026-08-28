@@ -21,7 +21,7 @@ from urllib.parse import urlparse
 
 import httpx
 
-from ..config import Config
+from ..config import Config, trust_env_for
 from .logger import get_logger
 
 logger = get_logger('discover.opencode_manager')
@@ -32,10 +32,22 @@ _started_by_us = False
 
 def _health(url: str, timeout: float = 3.0) -> bool:
     try:
-        r = httpx.get(f"{url.rstrip('/')}/global/health", timeout=timeout)
+        r = httpx.get(f"{url.rstrip('/')}/global/health", timeout=timeout,
+                      trust_env=trust_env_for(url))
         return r.status_code == 200 and bool(r.json().get('healthy'))
     except Exception:  # noqa: BLE001
         return False
+
+
+def _proxy_hint(url: str) -> str:
+    """Message d'aide si un proxy risque d'intercepter le trafic local."""
+    proxy = os.environ.get('HTTP_PROXY') or os.environ.get('http_proxy')
+    if proxy and not trust_env_for(url):
+        no_proxy = os.environ.get('NO_PROXY') or os.environ.get('no_proxy') or '(non défini)'
+        return (f" — proxy détecté (HTTP_PROXY={proxy}, NO_PROXY={no_proxy}) : "
+                f"{url} étant local, le trafic ne devrait pas passer par le proxy. "
+                f"Ajoutez '127.0.0.1,localhost' à NO_PROXY.")
+    return ""
 
 
 def start() -> bool:
@@ -102,7 +114,8 @@ def start() -> bool:
             return False
         time.sleep(0.5)
 
-    logger.error("Le serveur OpenCode n'est pas devenu sain dans le délai imparti")
+    logger.error("Le serveur OpenCode n'est pas devenu sain dans le délai imparti"
+                 + _proxy_hint(url))
     return False
 
 
