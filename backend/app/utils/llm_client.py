@@ -15,7 +15,7 @@ inchangés.
 import json
 import re
 import time
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Callable
 
 import httpx
 from openai import OpenAI
@@ -64,6 +64,16 @@ def _loads_dict(text: str) -> Dict[str, Any]:
         logger.debug(f"chat_json: réponse JSON non-objet ({type(obj).__name__}) : {text!r}")
         raise ValueError(f"réponse JSON non-objet ({type(obj).__name__})")
     return obj
+
+
+def _passes(obj: Dict[str, Any], validate: Optional[Callable[[Dict[str, Any]], bool]]) -> bool:
+    """Applique le validateur métier optionnel (True si absent ou s'il lève)."""
+    if validate is None:
+        return True
+    try:
+        return bool(validate(obj))
+    except Exception:  # noqa: BLE001
+        return False
 
 
 
@@ -210,31 +220,45 @@ class OpenCodeClient:
         temperature: float = 0.3,
         max_tokens: int = 4096,
         schema: Optional[Dict[str, Any]] = None,
+        validate: Optional[Callable[[Dict[str, Any]], bool]] = None,
     ) -> Dict[str, Any]:
         # Voie 1 : sortie structurée native d'OpenCode (JSON validé)
         if schema:
             output_format = {"type": "json_schema", "schema": schema, "retryCount": 2}
             response = self._prompt(messages, output_format=output_format)
             structured = (response.get('info') or {}).get('structured')
-            if isinstance(structured, dict) and structured:
+            if isinstance(structured, dict) and structured and _passes(structured, validate):
                 return structured
-            logger.warning("Sortie structurée OpenCode vide, repli sur le parsing texte")
-            # repli : tenter d'extraire du texte si présent
+            if isinstance(structured, dict) and structured:
+                logger.debug(
+                    "Sortie structurée OpenCode non exploitable (clés=%s), repli texte",
+                    list(structured.keys()),
+                )
+            else:
+                logger.warning("Sortie structurée OpenCode vide, repli sur le parsing texte")
+            # repli : tenter d'extraire du texte si présent (le JSON complet peut y être)
             text = self._extract_text(response)
             if text:
                 try:
-                    return _loads_dict(text)
+                    parsed = _loads_dict(text)
+                    if _passes(parsed, validate):
+                        return parsed
+                    logger.debug("Repli texte non exploitable (clés=%s), extrait=%.300s",
+                                 list(parsed.keys()), text)
                 except (json.JSONDecodeError, ValueError):
-                    pass
-            raise ValueError("OpenCode n'a pas produit de sortie structurée valide")
+                    logger.debug("Repli texte non parsable, extrait=%.300s", text)
+            raise ValueError("OpenCode n'a pas produit de sortie structurée exploitable")
 
         # Voie 2 : prompt libre + parsing (compat. sans schéma)
         response = self._prompt(messages)
         text = self._extract_text(response)
         try:
-            return _loads_dict(text)
+            parsed = _loads_dict(text)
         except (json.JSONDecodeError, ValueError) as e:
             raise ValueError(f"JSON invalide renvoyé par OpenCode: {e}")
+        if not _passes(parsed, validate):
+            raise ValueError("Réponse JSON non exploitable (échec de validation)")
+        return parsed
 
     def health(self) -> bool:
         try:
@@ -303,6 +327,7 @@ class OpenAILLMClient:
         temperature: float = 0.3,
         max_tokens: int = 4096,
         schema: Optional[Dict[str, Any]] = None,  # non utilisé (mode json_object)
+        validate: Optional[Callable[[Dict[str, Any]], bool]] = None,
     ) -> Dict[str, Any]:
         response = self.chat(
             messages=messages,
@@ -312,9 +337,12 @@ class OpenAILLMClient:
         )
         cleaned = _clean_json_text(response)
         try:
-            return _loads_dict(cleaned)
+            parsed = _loads_dict(cleaned)
         except (json.JSONDecodeError, ValueError) as e:
             raise ValueError(f"JSON invalide renvoyé par le LLM: {e}")
+        if not _passes(parsed, validate):
+            raise ValueError("Réponse JSON non exploitable (échec de validation)")
+        return parsed
 
 
 # --------------------------------------------------------------------------- #
@@ -340,6 +368,7 @@ class LLMClient:
                                max_tokens=max_tokens, response_format=response_format)
 
     def chat_json(self, messages, temperature: float = 0.3, max_tokens: int = 4096,
-                  schema: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+                  schema: Optional[Dict[str, Any]] = None,
+                  validate: Optional[Callable[[Dict[str, Any]], bool]] = None) -> Dict[str, Any]:
         return self._impl.chat_json(messages, temperature=temperature,
-                                    max_tokens=max_tokens, schema=schema)
+                                    max_tokens=max_tokens, schema=schema, validate=validate)

@@ -37,17 +37,24 @@ service.interceptors.response.use(
   },
   error => {
     console.error('Response error:', error)
-    
-    // 处理超时
+
+    // Gestion du timeout
     if (error.code === 'ECONNABORTED' && error.message.includes('timeout')) {
       console.error('Request timeout')
     }
-    
-    // 处理网络错误
+
+    // Erreur réseau
     if (error.message === 'Network Error') {
       console.error('Network error - please check your connection')
     }
-    
+
+    // Remonte le message métier renvoyé par le backend (ex. échec d'extraction)
+    // au lieu du générique « Request failed with status code 5xx ».
+    const apiError = error.response?.data?.error || error.response?.data?.message
+    if (apiError) {
+      return Promise.reject(new Error(apiError))
+    }
+
     return Promise.reject(error)
   }
 )

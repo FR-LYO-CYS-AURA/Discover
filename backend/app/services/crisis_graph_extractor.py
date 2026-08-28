@@ -53,6 +53,7 @@ CRISIS_GRAPH_SCHEMA = {
     "properties": {
         "nodes": {
             "type": "array",
+            "minItems": 1,
             "items": {
                 "type": "object",
                 "properties": {
@@ -68,6 +69,7 @@ CRISIS_GRAPH_SCHEMA = {
         },
         "edges": {
             "type": "array",
+            "minItems": 1,
             "items": {
                 "type": "object",
                 "properties": {
@@ -178,16 +180,32 @@ class CrisisGraphExtractor:
             {"role": "user", "content": user_content},
         ]
 
+        attempt_messages = messages
         last_error: Optional[Exception] = None
         for attempt in range(1, max_retries + 1):
             try:
                 logger.info(f"Extraction du graphe de crise (tentative {attempt}/{max_retries})")
-                raw = self.llm.chat_json(messages, temperature=0.3, max_tokens=4096,
-                                         schema=CRISIS_GRAPH_SCHEMA)
+                raw = self.llm.chat_json(
+                    attempt_messages, temperature=0.3, max_tokens=4096,
+                    schema=CRISIS_GRAPH_SCHEMA,
+                    validate=lambda d: bool(d.get('nodes')),
+                )
                 return self._validate_and_normalize(raw)
             except Exception as e:  # noqa: BLE001
                 last_error = e
                 logger.warning(f"Échec extraction (tentative {attempt}): {e}")
+                # Tentative suivante : on ajoute une consigne corrective explicite
+                # (rejouer un prompt identique reproduirait le même échec, la
+                # température étant ignorée par le backend OpenCode).
+                attempt_messages = messages + [{
+                    "role": "user",
+                    "content": (
+                        "La réponse précédente ne contenait aucun nœud exploitable. "
+                        "Renvoie IMPÉRATIVEMENT un objet JSON complet et valide avec au "
+                        "moins un élément dans \"nodes\" et dans \"edges\", conforme au "
+                        "schéma demandé, sans texte hors JSON."
+                    ),
+                }]
 
         raise RuntimeError(f"Extraction du graphe de crise échouée : {last_error}")
 

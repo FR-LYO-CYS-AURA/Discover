@@ -87,11 +87,12 @@ def create_scenario():
     scenario = ScenarioManager.create_scenario(title=title, description=description, context=context)
     ok, err = _run_extraction(scenario)
     if not ok:
+        # Échec d'origine LLM (dépendance amont) : 502 plutôt que 500.
         return jsonify({
             "success": False,
             "error": err,
             "data": scenario.to_dict(),
-        }), 500
+        }), 502
 
     return jsonify({"success": True, "data": scenario.to_dict()})
 
@@ -108,7 +109,7 @@ def extract_scenario(scenario_id: str):
 
     ok, err = _run_extraction(scenario)
     if not ok:
-        return jsonify({"success": False, "error": err, "data": scenario.to_dict()}), 500
+        return jsonify({"success": False, "error": err, "data": scenario.to_dict()}), 502
     return jsonify({"success": True, "data": scenario.to_dict()})
 
 
