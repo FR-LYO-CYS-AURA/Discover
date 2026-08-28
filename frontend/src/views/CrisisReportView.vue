@@ -105,7 +105,6 @@ onMounted(load)
 .report__header { display: flex; align-items: center; gap: 16px; padding: 14px 24px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg); }
 .back { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; }
 .report__title { flex: 1; display: flex; align-items: center; gap: 10px; }
-.brand { font-weight: 800; letter-spacing: 2px; }
 .sep { color: var(--text-subtle); }
 .report__actions { display: flex; gap: 10px; }
 .btn-ghost { background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 8px 14px; font-size: 13px; text-decoration: none; }
@@ -124,7 +123,7 @@ onMounted(load)
 .report__doc :deep(th), .report__doc :deep(td) { border: 1px solid var(--border); padding: 6px 10px; text-align: left; }
 .report__doc :deep(th) { background: var(--surface); }
 .report__doc :deep(hr) { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
-.report__doc :deep(strong) { color: var(--on-accent); }
+.report__doc :deep(strong) { color: var(--text); }
 
 @media print {
   .no-print { display: none !important; }

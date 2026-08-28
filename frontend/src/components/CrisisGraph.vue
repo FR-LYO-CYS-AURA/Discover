@@ -52,6 +52,11 @@ const selected = ref(null)
 let simulation = null
 let resizeObserver = null
 
+const domains = computed(() => {
+  const set = new Set(props.nodes.map(n => n.domain))
+  return Array.from(set)
+})
+
 function render() {
   const svgEl = svgRef.value
   const container = containerRef.value

@@ -91,7 +91,6 @@ onMounted(load)
 .sims__header { display: flex; align-items: center; gap: 16px; padding: 14px 24px; border-bottom: 1px solid var(--border); }
 .back { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; }
 .sims__title { display: flex; align-items: center; gap: 10px; }
-.brand { font-weight: 800; letter-spacing: 2px; }
 .sep { color: var(--text-subtle); }
 .sims__main { max-width: 1100px; margin: 0 auto; padding: 24px; }
 .empty { color: var(--text-subtle); padding: 40px; text-align: center; }

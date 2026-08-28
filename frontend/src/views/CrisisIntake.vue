@@ -230,8 +230,6 @@ onMounted(() => {
 }
 .header-link { margin-left: auto; color: var(--link); text-decoration: none; font-size: 14px; }
 .header-link:hover { color: var(--link-hover); }
-.brand__name { font-weight: 800; letter-spacing: 2px; font-size: 20px; }
-.brand__tag { margin-left: 14px; color: var(--text-muted); font-size: 13px; }
 
 .intake__main {
   max-width: 1100px; margin: 0 auto; padding: 32px;

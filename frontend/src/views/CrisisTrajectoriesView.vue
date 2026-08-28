@@ -222,7 +222,6 @@ onUnmounted(() => { if (poll) clearInterval(poll) })
 .back { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; }
 .back:hover { color: var(--text); }
 .traj__title { flex: 1; display: flex; align-items: center; gap: 10px; }
-.brand { font-weight: 800; letter-spacing: 2px; }
 .sep { color: var(--text-subtle); }
 .btn-primary { background: var(--accent); border: none; color: var(--on-accent); border-radius: 8px; padding: 8px 16px; cursor: pointer; font-weight: 600; font-size: 13px; }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }

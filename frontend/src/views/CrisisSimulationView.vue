@@ -132,7 +132,6 @@ onUnmounted(() => { if (poll) clearInterval(poll) })
 .back { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; }
 .back:hover { color: var(--text); }
 .sim-view__title { flex: 1; display: flex; align-items: center; gap: 10px; }
-.brand { font-weight: 800; letter-spacing: 2px; }
 .sep { color: var(--text-subtle); }
 
 .progress { display: flex; align-items: center; gap: 12px; padding: 12px 24px; color: var(--text-muted); }

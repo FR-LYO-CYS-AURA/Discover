@@ -153,7 +153,6 @@ onMounted(load)
 .back { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; }
 .back:hover { color: var(--text); }
 .graph-view__title { flex: 1; display: flex; align-items: center; gap: 10px; }
-.brand { font-weight: 800; letter-spacing: 2px; }
 .sep { color: var(--text-subtle); }
 .scn-title { color: var(--text-muted); }
 .graph-view__actions { display: flex; align-items: center; gap: 12px; }
