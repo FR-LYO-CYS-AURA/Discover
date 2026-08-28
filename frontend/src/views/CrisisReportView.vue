@@ -3,7 +3,7 @@
     <header class="report__header no-print">
       <button class="back" @click="goBack">← Retour</button>
       <div class="report__title">
-        <span class="brand">DISCOVER</span><span class="sep">/</span>
+        <AppBrand /><span class="sep">/</span>
         <span>Rapport de synthèse</span>
       </div>
       <SimulationTabs :simulation-id="simulationId" current="report" />
@@ -101,34 +101,34 @@ onMounted(load)
 </script>
 
 <style scoped>
-.report { min-height: 100vh; background: #0f1115; color: #e8eaed; }
-.report__header { display: flex; align-items: center; gap: 16px; padding: 14px 24px; border-bottom: 1px solid #23262c; position: sticky; top: 0; background: #0f1115; }
-.back { background: none; border: none; color: #9aa0a6; cursor: pointer; font-size: 14px; }
+.report { min-height: 100vh; background: var(--bg); color: var(--text); }
+.report__header { display: flex; align-items: center; gap: 16px; padding: 14px 24px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg); }
+.back { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; }
 .report__title { flex: 1; display: flex; align-items: center; gap: 10px; }
 .brand { font-weight: 800; letter-spacing: 2px; }
-.sep { color: #3a3d43; }
+.sep { color: var(--text-subtle); }
 .report__actions { display: flex; gap: 10px; }
-.btn-ghost { background: #1a1d23; border: 1px solid #2a2d33; color: #e8eaed; border-radius: 8px; padding: 8px 14px; font-size: 13px; text-decoration: none; }
-.btn-primary { background: #e63946; border: none; color: #fff; border-radius: 8px; padding: 8px 14px; font-weight: 600; font-size: 13px; cursor: pointer; }
-.report__loading, .report__error { padding: 16px 24px; color: #9aa0a6; }
-.report__error { color: #ff8fab; }
+.btn-ghost { background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 8px 14px; font-size: 13px; text-decoration: none; }
+.btn-primary { background: var(--accent); border: none; color: var(--on-accent); border-radius: 8px; padding: 8px 14px; font-weight: 600; font-size: 13px; cursor: pointer; }
+.report__loading, .report__error { padding: 16px 24px; color: var(--text-muted); }
+.report__error { color: var(--danger); }
 
 .report__doc { max-width: 820px; margin: 0 auto; padding: 32px 24px 80px; line-height: 1.55; }
-.report__doc :deep(h1) { font-size: 26px; border-bottom: 1px solid #2a2d33; padding-bottom: 8px; }
-.report__doc :deep(h2) { font-size: 20px; margin-top: 28px; color: #f4a261; }
+.report__doc :deep(h1) { font-size: 26px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+.report__doc :deep(h2) { font-size: 20px; margin-top: 28px; color: var(--brand-orange-deep); }
 .report__doc :deep(h3) { font-size: 16px; margin-top: 18px; }
-.report__doc :deep(blockquote) { border-left: 3px solid #457b9d; padding-left: 12px; color: #b8bcc4; font-style: italic; }
+.report__doc :deep(blockquote) { border-left: 3px solid var(--link); padding-left: 12px; color: var(--text-muted); font-style: italic; }
 .report__doc :deep(ul) { padding-left: 20px; }
 .report__doc :deep(li) { margin: 3px 0; }
 .report__doc :deep(table) { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 14px; }
-.report__doc :deep(th), .report__doc :deep(td) { border: 1px solid #2a2d33; padding: 6px 10px; text-align: left; }
-.report__doc :deep(th) { background: #1a1d23; }
-.report__doc :deep(hr) { border: none; border-top: 1px solid #2a2d33; margin: 24px 0; }
-.report__doc :deep(strong) { color: #fff; }
+.report__doc :deep(th), .report__doc :deep(td) { border: 1px solid var(--border); padding: 6px 10px; text-align: left; }
+.report__doc :deep(th) { background: var(--surface); }
+.report__doc :deep(hr) { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+.report__doc :deep(strong) { color: var(--on-accent); }
 
 @media print {
   .no-print { display: none !important; }
-  .report, .report__doc { background: #fff; color: #000; }
+  .report, .report__doc { background: var(--on-accent); color: #000; }
   .report__doc :deep(h2) { color: #b5642a; }
   .report__doc :deep(th) { background: #f0f0f0; }
   .report__doc :deep(th), .report__doc :deep(td) { border-color: #ccc; }

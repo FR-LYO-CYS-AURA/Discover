@@ -61,18 +61,18 @@ function go(s) {
 .step {
   display: flex; align-items: center; gap: 6px;
   background: none; border: none; cursor: pointer;
-  color: #6b7280; font-size: 12px; font-family: inherit; padding: 4px 6px;
+  color: var(--text-subtle); font-size: 12px; font-family: inherit; padding: 4px 6px;
 }
 .step__num {
   width: 18px; height: 18px; line-height: 18px; text-align: center;
-  border-radius: 50%; background: #2a2d33; color: #9aa0a6; font-size: 11px; font-weight: 600;
+  border-radius: 50%; background: var(--border); color: var(--text-muted); font-size: 11px; font-weight: 600;
 }
 .step__label { white-space: nowrap; }
-.step__sep { color: #3a3d43; margin-left: 4px; }
-.step--done { color: #b8bcc4; }
-.step--done .step__num { background: #14432f; color: #5ee0a0; }
-.step--active { color: #e8eaed; font-weight: 600; }
-.step--active .step__num { background: #e63946; color: #fff; }
-.step:not(.step--disabled):hover .step__label { color: #e8eaed; }
+.step__sep { color: var(--text-subtle); margin-left: 4px; }
+.step--done { color: var(--text-muted); }
+.step--done .step__num { background: var(--success-bg); color: var(--success); }
+.step--active { color: var(--text); font-weight: 600; }
+.step--active .step__num { background: var(--accent); color: var(--on-accent); }
+.step:not(.step--disabled):hover .step__label { color: var(--text); }
 .step--disabled { cursor: default; opacity: 0.5; }
 </style>

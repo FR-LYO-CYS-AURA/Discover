@@ -55,10 +55,10 @@ onMounted(async () => {
 .tabs { display: flex; gap: 2px; }
 .tab {
   background: none; border: none; border-bottom: 2px solid transparent;
-  color: #9aa0a6; font-size: 13px; font-family: inherit; cursor: pointer;
+  color: var(--text-muted); font-size: 13px; font-family: inherit; cursor: pointer;
   padding: 6px 12px;
 }
-.tab:not(.tab--disabled):hover { color: #e8eaed; }
-.tab--active { color: #e8eaed; font-weight: 600; border-bottom-color: #e63946; }
+.tab:not(.tab--disabled):hover { color: var(--text); }
+.tab--active { color: var(--text); font-weight: 600; border-bottom-color: var(--accent); }
 .tab--disabled { opacity: 0.4; cursor: default; }
 </style>

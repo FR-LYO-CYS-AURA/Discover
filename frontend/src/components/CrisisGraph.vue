@@ -37,6 +37,7 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
 import * as d3 from 'd3'
+import { colorFor, GRAPH } from '@/styles/palette'
 
 const props = defineProps({
   nodes: { type: Array, default: () => [] },
@@ -50,31 +51,6 @@ const selected = ref(null)
 
 let simulation = null
 let resizeObserver = null
-
-// Palette par domaine
-const DOMAIN_COLORS = {
-  cybersecurite: '#e63946',
-  sante: '#2a9d8f',
-  rh: '#e9c46a',
-  juridique: '#8d99ae',
-  finance: '#457b9d',
-  communication: '#f4a261',
-  operations: '#6a4c93',
-  logistique: '#264653',
-  physique: '#b5838d',
-  geopolitique: '#a44a3f',
-  reglementaire: '#6d6875',
-  reputation: '#ff8fab',
-  autre: '#adb5bd',
-}
-function colorFor(domain) {
-  return DOMAIN_COLORS[domain] || DOMAIN_COLORS.autre
-}
-
-const domains = computed(() => {
-  const set = new Set(props.nodes.map(n => n.domain))
-  return Array.from(set)
-})
 
 function render() {
   const svgEl = svgRef.value
@@ -107,7 +83,7 @@ function render() {
     .attr('orient', 'auto')
     .append('path')
     .attr('d', 'M0,-5L10,0L0,5')
-    .attr('fill', '#9aa0a6')
+    .attr('fill', GRAPH.edge)
 
   const g = svg.append('g')
 
@@ -121,13 +97,13 @@ function render() {
     .selectAll('line')
     .data(links)
     .join('line')
-    .attr('stroke', '#9aa0a6')
+    .attr('stroke', GRAPH.edge)
     .attr('stroke-opacity', 0.6)
     .attr('stroke-width', d => {
       if (props.impactMode && d.active) return 2 + (d.flow || 0) * 6
       return 1 + (d.weight || 0.5) * 4
     })
-    .attr('stroke', d => (props.impactMode && d.active) ? '#e63946' : '#9aa0a6')
+    .attr('stroke', d => (props.impactMode && d.active) ? GRAPH.edgeActive : GRAPH.edge)
     .attr('marker-end', 'url(#arrow)')
     .style('cursor', 'pointer')
     .on('click', (event, d) => {
@@ -160,7 +136,7 @@ function render() {
   node.append('circle')
     .attr('r', d => 8 + (d.criticality || 3) * 3)
     .attr('fill', d => colorFor(d.domain))
-    .attr('stroke', '#fff')
+    .attr('stroke', GRAPH.nodeStroke)
     .attr('stroke-width', 2)
 
   // Halo d'impact (mode propagation)
@@ -169,7 +145,7 @@ function render() {
       .insert('circle', 'circle')
       .attr('r', d => 8 + (d.criticality || 3) * 3 + 4 + (d.impact_score || 0) * 14)
       .attr('fill', 'none')
-      .attr('stroke', '#e63946')
+      .attr('stroke', GRAPH.impact)
       .attr('stroke-opacity', d => 0.25 + (d.impact_score || 0) * 0.6)
       .attr('stroke-width', d => 1 + (d.impact_score || 0) * 4)
   }
@@ -180,7 +156,7 @@ function render() {
     .attr('y', d => 8 + (d.criticality || 3) * 3 + 12)
     .attr('text-anchor', 'middle')
     .attr('font-size', '11px')
-    .attr('fill', '#e8eaed')
+    .attr('fill', GRAPH.text)
     .attr('pointer-events', 'none')
 
   svg.on('click', () => { selected.value = null })
@@ -235,7 +211,7 @@ watch(() => [props.nodes, props.edges], () => {
   width: 100%;
   height: 100%;
   min-height: 480px;
-  background: #14161a;
+  background: var(--surface-alt);
   border-radius: 12px;
   overflow: hidden;
 }
@@ -244,12 +220,12 @@ watch(() => [props.nodes, props.edges], () => {
 .crisis-graph__legend {
   position: absolute;
   top: 12px; left: 12px;
-  background: rgba(20, 22, 26, 0.85);
-  border: 1px solid #2a2d33;
+  background: var(--overlay);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 10px 12px;
   font-size: 12px;
-  color: #e8eaed;
+  color: var(--text);
   max-width: 180px;
 }
 .legend-title { font-weight: 600; margin-bottom: 6px; opacity: 0.8; }
@@ -261,15 +237,15 @@ watch(() => [props.nodes, props.edges], () => {
   position: absolute;
   top: 12px; right: 12px;
   width: 260px;
-  background: rgba(20, 22, 26, 0.95);
-  border: 1px solid #2a2d33;
+  background: var(--overlay);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 14px;
-  color: #e8eaed;
+  color: var(--text);
 }
 .detail-close {
   position: absolute; top: 6px; right: 8px;
-  background: none; border: none; color: #9aa0a6;
+  background: none; border: none; color: var(--text-muted);
   font-size: 18px; cursor: pointer;
 }
 .detail-domain { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8; }
@@ -280,6 +256,6 @@ watch(() => [props.nodes, props.edges], () => {
 .crisis-graph__empty {
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
-  color: #6b7280;
+  color: var(--text-subtle);
 }
 </style>

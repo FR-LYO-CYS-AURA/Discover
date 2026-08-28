@@ -287,11 +287,38 @@ requests and background tasks), and a **global session summary** available on de
 
 ## Stack technique / Tech stack
 
-- **Backend** : Python 3.11+, Flask, Zep Cloud
+- **Backend** : Python 3.11+, Flask
 - **Frontend** : Vue 3 (Composition API), Vite, Vue Router, D3.js, Axios
 - **LLM** : via le harness **OpenCode** (défaut) — l'auth et le modèle sont gérés par
   OpenCode ; repli optionnel sur une API compatible OpenAI (`LLM_BACKEND=openai`).
 - **Communication** : REST + polling incrémental / REST + incremental polling
+
+---
+
+## Identité visuelle / Visual identity
+
+**FR —** DISCOVER adopte un **thème clair** et un logo **papillon** (aile cyan / aile
+orange) symbolisant la bascule des trajectoires et les effets domino. Le design
+repose sur un système de **design tokens** CSS (`frontend/src/styles/theme.css`,
+variables `:root`) et une **palette JavaScript centralisée** pour D3
+(`frontend/src/styles/palette.js`) :
+
+- **Marque** : cyan `#00B8D4` (accent UI : boutons, onglets, focus) ·
+  orange `#F85810` (sémantique de danger : halo d'impact, arête active, gravité max).
+- **Surfaces claires** : fond `#FBFBFB`, cartes `#FFFFFF`, bordures `#E3E7EC`.
+- **Logo** : `frontend/src/assets/logo/butterfly.png` (fond transparent), décliné en
+  favicons (`frontend/public/favicon-*.png`). Composant partagé
+  `frontend/src/components/AppBrand.vue`.
+
+Le thème est centralisé : un mode sombre pourra être ajouté en surchargeant les
+variables `:root` sans toucher aux composants.
+
+**EN —** DISCOVER uses a **light theme** and a **butterfly** logo (cyan / orange wings)
+evoking trajectory branching and domino effects. Styling relies on CSS **design
+tokens** (`theme.css`, `:root` variables) and a centralized **JS palette**
+(`palette.js`) for D3. Brand cyan `#00B8D4` drives the UI accent; brand orange
+`#F85810` carries danger semantics. The theme is centralized, making a future dark
+mode a matter of overriding `:root`.
 
 ---
 

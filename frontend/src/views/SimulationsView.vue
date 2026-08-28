@@ -2,7 +2,7 @@
   <div class="sims">
     <header class="sims__header">
       <button class="back" @click="goHome">← Accueil</button>
-      <div class="sims__title"><span class="brand">DISCOVER</span><span class="sep">/</span><span>Mes simulations</span></div>
+      <div class="sims__title"><AppBrand /><span class="sep">/</span><span>Mes simulations</span></div>
     </header>
 
     <main class="sims__main">
@@ -54,6 +54,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { listSimulations, deleteSimulation, renameSimulation } from '../api/simulation'
+import { idxColor } from '@/styles/palette'
 
 const router = useRouter()
 const items = ref([])
@@ -63,7 +64,7 @@ const editTitle = ref('')
 const STATUS = { created: 'Créée', analyzing: 'Analyse', propagating: 'Propagation', narrating: 'Qualif.', completed: 'Terminée', failed: 'Échec' }
 function statusLabel(s) { return STATUS[s] || s }
 function fmtDur(s) { return s == null ? '—' : (s < 60 ? `${s.toFixed(0)} s` : `${Math.floor(s / 60)}m${Math.round(s % 60)}s`) }
-function idxColor(i) { if (i >= 75) return '#c0392b'; if (i >= 55) return '#b5642a'; if (i >= 35) return '#8a7a2a'; if (i >= 18) return '#2f7f5f'; return '#2f5f3f' }
+
 
 async function load() {
   try { items.value = (await listSimulations()).data || [] } catch (e) { console.error(e) }
@@ -86,30 +87,30 @@ onMounted(load)
 </script>
 
 <style scoped>
-.sims { min-height: 100vh; background: #0f1115; color: #e8eaed; }
-.sims__header { display: flex; align-items: center; gap: 16px; padding: 14px 24px; border-bottom: 1px solid #23262c; }
-.back { background: none; border: none; color: #9aa0a6; cursor: pointer; font-size: 14px; }
+.sims { min-height: 100vh; background: var(--bg); color: var(--text); }
+.sims__header { display: flex; align-items: center; gap: 16px; padding: 14px 24px; border-bottom: 1px solid var(--border); }
+.back { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; }
 .sims__title { display: flex; align-items: center; gap: 10px; }
 .brand { font-weight: 800; letter-spacing: 2px; }
-.sep { color: #3a3d43; }
+.sep { color: var(--text-subtle); }
 .sims__main { max-width: 1100px; margin: 0 auto; padding: 24px; }
-.empty { color: #6b7280; padding: 40px; text-align: center; }
+.empty { color: var(--text-subtle); padding: 40px; text-align: center; }
 .sims__table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.sims__table th { text-align: left; color: #9aa0a6; padding: 8px 10px; border-bottom: 1px solid #2a2d33; font-weight: 500; }
-.sims__table td { padding: 8px 10px; border-bottom: 1px solid #1a1d23; }
-.muted { color: #9aa0a6; }
+.sims__table th { text-align: left; color: var(--text-muted); padding: 8px 10px; border-bottom: 1px solid var(--border); font-weight: 500; }
+.sims__table td { padding: 8px 10px; border-bottom: 1px solid var(--surface); }
+.muted { color: var(--text-muted); }
 .model { font-size: 11px; }
 .title { cursor: pointer; font-weight: 600; }
-.title:hover { color: #6ba3cc; }
-.edit { background: #0f1115; border: 1px solid #457b9d; border-radius: 6px; color: #e8eaed; padding: 3px 6px; font-family: inherit; }
-.idx { color: #fff; padding: 1px 8px; border-radius: 10px; font-weight: 600; }
+.title:hover { color: var(--link-hover); }
+.edit { background: var(--bg); border: 1px solid var(--link); border-radius: 6px; color: var(--text); padding: 3px 6px; font-family: inherit; }
+.idx { color: var(--on-accent); padding: 1px 8px; border-radius: 10px; font-weight: 600; }
 .actions { white-space: nowrap; text-align: right; }
-.mini { background: none; border: none; color: #9aa0a6; font-size: 12px; cursor: pointer; padding: 2px 5px; }
-.mini--link { color: #457b9d; }
-.mini--link:hover { color: #6ba3cc; }
-.mini--del { color: #b5646d; }
+.mini { background: none; border: none; color: var(--text-muted); font-size: 12px; cursor: pointer; padding: 2px 5px; }
+.mini--link { color: var(--link); }
+.mini--link:hover { color: var(--link-hover); }
+.mini--del { color: var(--danger); }
 .badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; }
-.badge--completed { background: #14432f; color: #5ee0a0; }
-.badge--failed { background: #4a1620; color: #ff8fab; }
-.badge--analyzing, .badge--propagating, .badge--narrating, .badge--created { background: #2a2d33; color: #b8bcc4; }
+.badge--completed { background: var(--success-bg); color: var(--success); }
+.badge--failed { background: var(--danger-bg); color: var(--danger); }
+.badge--analyzing, .badge--propagating, .badge--narrating, .badge--created { background: var(--border); color: var(--text-muted); }
 </style>

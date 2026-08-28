@@ -3,7 +3,7 @@
     <header class="graph-view__header">
       <button class="back" @click="goHome">← Retour</button>
       <div class="graph-view__title">
-        <span class="brand">DISCOVER</span>
+        <AppBrand />
         <span class="sep">/</span>
         <span class="scn-title">{{ scenario?.title || 'Scénario' }}</span>
       </div>
@@ -145,55 +145,55 @@ onMounted(load)
 </script>
 
 <style scoped>
-.graph-view { min-height: 100vh; background: #0f1115; color: #e8eaed; display: flex; flex-direction: column; }
+.graph-view { min-height: 100vh; background: var(--bg); color: var(--text); display: flex; flex-direction: column; }
 .graph-view__header {
   display: flex; align-items: center; gap: 16px;
-  padding: 14px 24px; border-bottom: 1px solid #23262c;
+  padding: 14px 24px; border-bottom: 1px solid var(--border);
 }
-.back { background: none; border: none; color: #9aa0a6; cursor: pointer; font-size: 14px; }
-.back:hover { color: #e8eaed; }
+.back { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; }
+.back:hover { color: var(--text); }
 .graph-view__title { flex: 1; display: flex; align-items: center; gap: 10px; }
 .brand { font-weight: 800; letter-spacing: 2px; }
-.sep { color: #3a3d43; }
-.scn-title { color: #b8bcc4; }
+.sep { color: var(--text-subtle); }
+.scn-title { color: var(--text-muted); }
 .graph-view__actions { display: flex; align-items: center; gap: 12px; }
 .btn-ghost {
-  background: #1a1d23; border: 1px solid #2a2d33; color: #e8eaed;
+  background: var(--surface); border: 1px solid var(--border); color: var(--text);
   border-radius: 8px; padding: 8px 14px; cursor: pointer; font-size: 13px;
 }
 .btn-ghost:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-primary {
-  background: #e63946; border: none; color: #fff;
+  background: var(--accent); border: none; color: var(--on-accent);
   border-radius: 8px; padding: 8px 16px; cursor: pointer; font-size: 13px; font-weight: 600;
 }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .graph-view__body { flex: 1; display: grid; grid-template-columns: 1fr 320px; gap: 0; }
 .graph-view__panel { padding: 16px; min-height: 0; }
-.graph-view__side { border-left: 1px solid #23262c; padding: 20px; overflow-y: auto; }
+.graph-view__side { border-left: 1px solid var(--border); padding: 20px; overflow-y: auto; }
 
 .side-block { margin-bottom: 22px; }
-.side-block h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.6px; color: #9aa0a6; margin: 0 0 8px; }
-.summary, .desc { font-size: 14px; line-height: 1.55; color: #cdd0d6; margin: 0; }
+.side-block h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); margin: 0 0 8px; }
+.summary, .desc { font-size: 14px; line-height: 1.55; color: var(--text); margin: 0; }
 .side-stats { display: flex; gap: 14px; }
-.stat { flex: 1; background: #1a1d23; border: 1px solid #2a2d33; border-radius: 8px; padding: 12px; text-align: center; }
+.stat { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
 .stat__num { display: block; font-size: 22px; font-weight: 700; }
-.stat__lbl { font-size: 12px; color: #9aa0a6; }
-.next { color: #6b7280; font-size: 13px; font-style: italic; }
+.stat__lbl { font-size: 12px; color: var(--text-muted); }
+.next { color: var(--text-subtle); font-size: 13px; font-style: italic; }
 
 .badge { font-size: 11px; padding: 3px 9px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.4px; }
-.badge--graph_ready { background: #14432f; color: #5ee0a0; }
-.badge--failed { background: #4a1620; color: #ff8fab; }
-.badge--extracting, .badge--created { background: #2a2d33; color: #b8bcc4; }
+.badge--graph_ready { background: var(--success-bg); color: var(--success); }
+.badge--failed { background: var(--danger-bg); color: var(--danger); }
+.badge--extracting, .badge--created { background: var(--border); color: var(--text-muted); }
 
 .overlay {
   position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
-  background: rgba(15, 17, 21, 0.7); color: #e8eaed; font-size: 16px;
+  background: var(--overlay); color: var(--text); font-size: 16px;
 }
-.overlay--error { color: #ff8fab; }
+.overlay--error { color: var(--danger); }
 
 @media (max-width: 860px) {
   .graph-view__body { grid-template-columns: 1fr; }
-  .graph-view__side { border-left: none; border-top: 1px solid #23262c; }
+  .graph-view__side { border-left: none; border-top: 1px solid var(--border); }
 }
 </style>

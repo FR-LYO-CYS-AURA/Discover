@@ -43,12 +43,12 @@ function fmtNum(n) { return n == null ? '—' : n.toLocaleString('fr-FR') }
 </script>
 
 <style scoped>
-.metrics { background: #1a1d23; border: 1px solid #2a2d33; border-radius: 8px; padding: 12px 14px; }
-.metrics h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .5px; color: #9aa0a6; margin: 0 0 10px; }
+.metrics { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+.metrics h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .5px; color: var(--text-muted); margin: 0 0 10px; }
 .metrics__totals { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-.chip { background: #0f1115; border: 1px solid #2a2d33; border-radius: 12px; padding: 2px 9px; font-size: 12px; color: #cdd0d6; }
-.chip--model { border-color: #457b9d; color: #9cc4e0; }
+.chip { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 2px 9px; font-size: 12px; color: var(--text); }
+.chip--model { border-color: var(--link); color: var(--link); }
 .metrics__table { width: 100%; border-collapse: collapse; font-size: 12px; }
-.metrics__table th { text-align: left; color: #9aa0a6; padding: 4px 6px; border-bottom: 1px solid #2a2d33; font-weight: 500; }
-.metrics__table td { padding: 4px 6px; color: #cdd0d6; }
+.metrics__table th { text-align: left; color: var(--text-muted); padding: 4px 6px; border-bottom: 1px solid var(--border); font-weight: 500; }
+.metrics__table td { padding: 4px 6px; color: var(--text); }
 </style>

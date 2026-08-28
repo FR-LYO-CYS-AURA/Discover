@@ -1,0 +1,52 @@
+/*
+ * DISCOVER — thème clair (design tokens)
+ * Palette dérivée du logo papillon (aile cyan / aile orange).
+ * Les composants n'utilisent que ces variables : un mode sombre pourra être
+ * ajouté ultérieurement en surchargeant :root sous [data-theme="dark"].
+ */
+:root {
+  /* --- Marque (papillon) --- */
+  --brand-cyan: #00B8D4;
+  --brand-cyan-deep: #0097B2;
+  --brand-cyan-soft: #E1F6FA;
+  --brand-orange: #F87008;
+  --brand-orange-deep: #F85810;
+  --brand-amber: #F89010;
+
+  /* --- Surfaces (thème clair) --- */
+  --bg: #FBFBFB;            /* = fond natif du logo */
+  --surface: #FFFFFF;
+  --surface-alt: #F3F5F7;
+  --overlay: rgba(255, 255, 255, 0.78);
+
+  /* --- Bordures --- */
+  --border: #E3E7EC;
+  --border-strong: #CBD2DA;
+
+  /* --- Texte --- */
+  --text: #1A1D23;
+  --text-muted: #5F6B7A;
+  --text-subtle: #8A94A2;
+  --on-accent: #FFFFFF;    /* texte sur fond de marque */
+
+  /* --- Accent UI (chrome : boutons, onglets, spinner, stepper) --- */
+  --accent: var(--brand-cyan);
+  --accent-hover: var(--brand-cyan-deep);
+  --link: var(--brand-cyan-deep);
+  --link-hover: var(--brand-cyan);
+  --focus: var(--brand-cyan);
+
+  /* --- Sémantique --- */
+  --danger: var(--brand-orange-deep);         /* impact / gravité max */
+  --danger-strong: #D9480F;
+  --success: #1E7D53;
+  --success-bg: #E3F6ED;
+  --warning: #B5720B;
+  --warning-bg: #FBF0DA;
+  --danger-bg: #FCE7DC;
+
+  /* --- Scrollbar --- */
+  --scrollbar-track: #EDEFF2;
+  --scrollbar-thumb: #C3CAD3;
+  --scrollbar-thumb-hover: #A7B0BC;
+}
