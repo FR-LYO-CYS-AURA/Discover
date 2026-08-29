@@ -18,6 +18,10 @@
   --surface: #FFFFFF;
   --surface-alt: #F3F5F7;
   --overlay: rgba(255, 255, 255, 0.78);
+  --overlay-strong: rgba(251, 251, 251, 0.94);   /* écran de chargement */
+
+  /* --- Couches (z-index) --- */
+  --z-overlay: 100;
 
   /* --- Bordures --- */
   --border: #E3E7EC;
@@ -49,4 +53,9 @@
   --scrollbar-track: #EDEFF2;
   --scrollbar-thumb: #C3CAD3;
   --scrollbar-thumb-hover: #A7B0BC;
+}
+
+/* Animation partagée (spinners, anneau de l'écran de chargement). */
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

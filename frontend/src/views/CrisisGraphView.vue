@@ -21,6 +21,10 @@
     </header>
 
     <div class="graph-view__body">
+      <LoadingScreen
+        :visible="loading || reextracting"
+        :label="reextracting ? 'Ré-extraction du graphe…' : 'Chargement du scénario…'"
+      />
       <div class="graph-view__panel">
         <CrisisGraph :nodes="nodes" :edges="edges" />
       </div>
@@ -49,7 +53,6 @@
       </aside>
     </div>
 
-    <div v-if="loading" class="overlay">Chargement…</div>
     <div v-if="error" class="overlay overlay--error">{{ error }}</div>
   </div>
 </template>
@@ -61,6 +64,7 @@ import CrisisGraph from '../components/CrisisGraph.vue'
 import CrisisStepper from '../components/CrisisStepper.vue'
 import SimulationTabs from '../components/SimulationTabs.vue'
 import MetricsPanel from '../components/MetricsPanel.vue'
+import LoadingScreen from '../components/LoadingScreen.vue'
 import { getScenario, extractScenario } from '../api/scenario'
 import { runSimulation } from '../api/simulation'
 
@@ -167,7 +171,7 @@ onMounted(load)
 }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.graph-view__body { flex: 1; display: grid; grid-template-columns: 1fr 320px; gap: 0; }
+.graph-view__body { flex: 1; display: grid; grid-template-columns: 1fr 320px; gap: 0; position: relative; }
 .graph-view__panel { padding: 16px; min-height: 0; }
 .graph-view__side { border-left: 1px solid var(--border); padding: 20px; overflow-y: auto; }
 

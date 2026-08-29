@@ -6,6 +6,7 @@
     </header>
 
     <main class="intake__main">
+      <LoadingScreen :visible="loading" label="Extraction du graphe de crise…" />
       <section class="intake__form">
         <h1>Décrivez la situation de crise</h1>
         <p class="intake__hint">
@@ -99,6 +100,7 @@ import { useRouter } from 'vue-router'
 import { createScenario, listScenarios, deleteScenario } from '../api/scenario'
 import { listSimulations } from '../api/simulation'
 import AppBrand from '../components/AppBrand.vue'
+import LoadingScreen from '../components/LoadingScreen.vue'
 import { getReferentielCategories, getReferentielScenarios, getReferentielScenario } from '../api/referentiel'
 
 const router = useRouter()
@@ -234,6 +236,7 @@ onMounted(() => {
 .intake__main {
   max-width: 1100px; margin: 0 auto; padding: 32px;
   display: grid; grid-template-columns: 1.6fr 1fr; gap: 28px;
+  position: relative;
 }
 .intake__form h1 { font-size: 24px; margin: 0 0 8px; }
 .intake__hint { color: var(--text-muted); font-size: 14px; margin: 0 0 20px; line-height: 1.5; }

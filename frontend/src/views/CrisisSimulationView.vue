@@ -14,12 +14,10 @@
       </button>
     </header>
 
-    <div v-if="running" class="progress">
-      <div class="progress__spinner"></div>
-      <div class="progress__text">{{ progressText }}</div>
-    </div>
+    <div class="sim-view__content">
+      <LoadingScreen :visible="running" :label="progressText" />
 
-    <div class="sim-view__body" v-if="sim">
+      <div class="sim-view__body" v-if="sim">
       <div class="sim-view__panel">
         <CrisisGraph :nodes="graphNodes" :edges="graphEdges" :impact-mode="true" />
       </div>
@@ -64,6 +62,7 @@
         </div>
       </aside>
     </div>
+    </div>
 
     <div v-if="error" class="overlay overlay--error">{{ error }}</div>
   </div>
@@ -76,6 +75,7 @@ import CrisisGraph from '../components/CrisisGraph.vue'
 import CrisisStepper from '../components/CrisisStepper.vue'
 import SimulationTabs from '../components/SimulationTabs.vue'
 import MetricsPanel from '../components/MetricsPanel.vue'
+import LoadingScreen from '../components/LoadingScreen.vue'
 import { getSimulation } from '../api/simulation'
 import { domainColor, sevColor } from '@/styles/palette'
 
@@ -134,9 +134,7 @@ onUnmounted(() => { if (poll) clearInterval(poll) })
 .sim-view__title { flex: 1; display: flex; align-items: center; gap: 10px; }
 .sep { color: var(--text-subtle); }
 
-.progress { display: flex; align-items: center; gap: 12px; padding: 12px 24px; color: var(--text-muted); }
-.progress__spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
+.sim-view__content { position: relative; flex: 1; min-height: 320px; }
 
 .sim-view__body { flex: 1; display: grid; grid-template-columns: 1fr 380px; }
 .sim-view__panel { padding: 16px; min-height: 0; }

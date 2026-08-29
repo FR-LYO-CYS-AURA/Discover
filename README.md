@@ -309,6 +309,11 @@ variables `:root`) et une **palette JavaScript centralisée** pour D3
 - **Logo** : `frontend/src/assets/logo/butterfly.png` (fond transparent), décliné en
   favicons (`frontend/public/favicon-*.png`). Composant partagé
   `frontend/src/components/AppBrand.vue`.
+- **Écran de chargement de marque** : `frontend/src/components/LoadingScreen.vue` — logo
+  papillon centré, anneau cyan tournant et libellé d'étape, affiché pendant les attentes
+  longues (extraction du graphe ~1 min, simulation jusqu'à ~2 min, trajectoires ~30 s).
+  Seuil anti-flash de 300 ms (invisible sur les chargements rapides), en-tête laissé
+  accessible, respect de `prefers-reduced-motion` et masquage à l'impression.
 
 Le thème est centralisé : un mode sombre pourra être ajouté en surchargeant les
 variables `:root` sans toucher aux composants.
@@ -317,8 +322,11 @@ variables `:root` sans toucher aux composants.
 evoking trajectory branching and domino effects. Styling relies on CSS **design
 tokens** (`theme.css`, `:root` variables) and a centralized **JS palette**
 (`palette.js`) for D3. Brand cyan `#00B8D4` drives the UI accent; brand orange
-`#F85810` carries danger semantics. The theme is centralized, making a future dark
-mode a matter of overriding `:root`.
+`#F85810` carries danger semantics. A branded **loading screen**
+(`LoadingScreen.vue` — centered butterfly, spinning cyan ring, step label, 300 ms
+anti-flash threshold, reduced-motion aware) covers long waits (extraction, simulation,
+trajectories) while keeping the header accessible. The theme is centralized, making a
+future dark mode a matter of overriding `:root`.
 
 ---
 

@@ -15,12 +15,13 @@
       </button>
     </header>
 
-    <div v-if="status === 'generating' || generating" class="progress">
-      <div class="progress__spinner"></div>
-      <div>Génération des 4 trajectoires…</div>
-    </div>
+    <div class="traj__content">
+      <LoadingScreen
+        :visible="status === 'generating' || generating"
+        label="Génération des 4 trajectoires…"
+      />
 
-    <div v-if="trajectories.length" class="traj__body">
+      <div v-if="trajectories.length" class="traj__body">
       <!-- Métriques (dont l'étape trajectoires) -->
       <section class="metrics-section" v-if="simMetrics && simMetrics.steps">
         <MetricsPanel :metrics="simMetrics" />
@@ -104,6 +105,7 @@
         </article>
       </section>
     </div>
+    </div>
 
     <div v-if="error" class="overlay overlay--error">{{ error }}</div>
   </div>
@@ -115,6 +117,7 @@ import { useRouter } from 'vue-router'
 import CrisisStepper from '../components/CrisisStepper.vue'
 import SimulationTabs from '../components/SimulationTabs.vue'
 import MetricsPanel from '../components/MetricsPanel.vue'
+import LoadingScreen from '../components/LoadingScreen.vue'
 import { getTrajectories, generateTrajectories, getTaskStatus, getSimulation } from '../api/simulation'
 import { idxColor, heatCell } from '@/styles/palette'
 
@@ -238,9 +241,7 @@ onUnmounted(() => { if (poll) clearInterval(poll) })
 .cons__dom { color: var(--text-muted); font-size: 11px; margin-left: 8px; }
 .cons__score { color: var(--danger); float: right; font-weight: 600; }
 
-.progress { display: flex; align-items: center; gap: 12px; padding: 40px 24px; color: var(--text-muted); justify-content: center; }
-.progress__spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
+.traj__content { position: relative; min-height: 320px; }
 
 .traj__body { padding: 24px; max-width: 1400px; margin: 0 auto; }
 

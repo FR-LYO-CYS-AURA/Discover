@@ -13,10 +13,12 @@
       </div>
     </header>
 
-    <div v-if="loading" class="report__loading no-print">Chargement…</div>
-    <div v-if="error" class="report__error no-print">{{ error }}</div>
+    <div class="report__content">
+      <LoadingScreen :visible="loading" label="Chargement du rapport…" />
+      <div v-if="error" class="report__error no-print">{{ error }}</div>
 
-    <article class="report__doc" v-html="html"></article>
+      <article class="report__doc" v-html="html"></article>
+    </div>
   </div>
 </template>
 
@@ -24,6 +26,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import SimulationTabs from '../components/SimulationTabs.vue'
+import LoadingScreen from '../components/LoadingScreen.vue'
 import { getReport, downloadReportUrl } from '../api/simulation'
 
 const props = defineProps({ simulationId: { type: String, required: true } })
@@ -110,6 +113,7 @@ onMounted(load)
 .btn-ghost { background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 8px 14px; font-size: 13px; text-decoration: none; }
 .btn-primary { background: var(--accent); border: none; color: var(--on-accent); border-radius: 8px; padding: 8px 14px; font-weight: 600; font-size: 13px; cursor: pointer; }
 .report__loading, .report__error { padding: 16px 24px; color: var(--text-muted); }
+.report__content { position: relative; min-height: 320px; }
 .report__error { color: var(--danger); }
 
 .report__doc { max-width: 820px; margin: 0 auto; padding: 32px 24px 80px; line-height: 1.55; }
