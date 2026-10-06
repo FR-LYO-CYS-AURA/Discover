@@ -36,12 +36,28 @@ export const domainColor = colorFor
  * Les nœuds peuvent porter 15 domaines (9 familles d'experts + 6 domaines
  * "secteur"). Sur un graphe de ~20 nœuds, cela produit autant de teintes que
  * de nœuds : la couleur ne porte plus aucun signal et la légende devient
- * illisible. On regroupe donc en 6 familles + "autre".
+ * illisible. On regroupe donc en 7 familles + "autre".
  * Le domaine précis reste affiché dans le panneau de détail.
+ *
+ * `technique` et `cybersecurite` sont délibérément SÉPARÉS : le référentiel
+ * les définit distinctement (« Industriel / technique » vs « Informatique /
+ * numérique ») et, dans les graphes réels, `technique` porte les ACTIFS
+ * attaqués (Active Directory, DPI, messagerie) tandis que `cybersecurite`
+ * porte la MENACE et la défense (rançongiciel, EDR, ANSSI). C'est la
+ * distinction la plus structurante d'une crise cyber ; les fusionner
+ * masquait la relation cause/cible et concentrait 31 % des nœuds sur une
+ * seule couleur.
+ *
+ * Choix de l'ambre pour `si` plutôt que du vert : le vert offre un meilleur
+ * contraste en vision normale (ΔE 120 contre le magenta du cyber) mais s'en
+ * rapproche dangereusement en deutéranopie (ΔE 15). L'ambre reste lisible
+ * sur les trois visions (88 / 61 / 80).
  */
 export const DOMAIN_FAMILIES = [
-  { id: 'si', label: 'SI & cybersécurité', color: '#D6336C',
-    domains: ['cybersecurite', 'technique'] },
+  { id: 'si', label: 'SI & technique', color: '#E8A400',
+    domains: ['technique'] },
+  { id: 'cyber', label: 'Cybersécurité', color: '#D6336C',
+    domains: ['cybersecurite'] },
   { id: 'ops', label: 'Opérations & terrain', color: '#1098AD',
     domains: ['operationnel', 'operations', 'logistique', 'physique', 'sante'] },
   { id: 'humain', label: 'Humain & juridique', color: '#5C6BC0',

@@ -327,9 +327,31 @@ requests and background tasks), and a **global session summary** available on de
 Plusieurs dispositifs le rendent lisible à cette densité :
 
 - **Familles de domaines** — les 15 domaines possibles (9 familles d'experts + 6 domaines
-  secteur) sont regroupés en **6 familles + « autre »** (`palette.js`). Sans cela, un
+  secteur) sont regroupés en **7 familles + « autre »** (`palette.js`). Sans cela, un
   graphe de 20 nœuds affiche jusqu'à 13 teintes et la couleur ne porte plus de signal.
   Le domaine précis reste affiché dans le panneau de détail.
+
+  | Famille | Domaines regroupés |
+  |---|---|
+  | SI & technique | `technique` |
+  | Cybersécurité | `cybersecurite` |
+  | Opérations & terrain | `operationnel`, `logistique`, `physique`, `sante` |
+  | Humain & juridique | `rh`, `juridique`, `reglementaire` |
+  | Finance | `finance` |
+  | Image & géopolitique | `communication`, `reputation`, `geopolitique` |
+  | Résilience | `resilience` |
+  | *Autre* | `autre` |
+
+  `technique` et `cybersecurite` restent **séparés** : le référentiel les définit
+  distinctement (« Industriel / technique » vs « Informatique / numérique ») et, dans
+  les graphes réels, `technique` porte les **actifs attaqués** (Active Directory, DPI,
+  messagerie) quand `cybersecurite` porte la **menace et la défense** (rançongiciel,
+  EDR, ANSSI). C'est la distinction la plus structurante d'une crise cyber : les
+  fusionner masquait la relation cause/cible et concentrait 31 % des nœuds sur une
+  seule couleur. Les teintes sont choisies sur critère perceptuel (CIELAB) : la paire
+  SI / Cybersécurité reste distinguable en vision normale (ΔE 88) comme en
+  **deutéranopie (61) et protanopie (80)**. Au-delà de ~5 catégories, aucune palette
+  catégorielle n'est toutefois pleinement sûre pour les daltoniens.
 - **Libellés** — tronqués à 24 caractères, avec halo clair (`paint-order: stroke`) pour
   rester lisibles au croisement des arêtes ; texte intégral en infobulle et dans le
   panneau. La force de collision est dimensionnée sur la **largeur réelle du texte**
@@ -348,8 +370,11 @@ Plusieurs dispositifs le rendent lisible à cette densité :
   relancer la simulation : le graphe ne se réorganise pas à chaque clic.
 
 **EN —** The D3 force-directed graph (20-26 nodes, 28-39 edges, labels averaging 29 chars)
-is made readable through: **domain families** (15 domains grouped into 6 + "other", since
-13 hues on 20 nodes carry no signal), **truncated haloed labels** with collision sized on
+is made readable through: **domain families** (15 domains grouped into 7 + "other", since
+13 hues on 20 nodes carry no signal; `technique` and `cybersecurite` are kept **separate**
+— attacked assets vs threat and defence, the key distinction in a cyber crisis — with hues
+chosen so the pair stays distinguishable under normal vision as well as deuteranopia and
+protanopia), **truncated haloed labels** with collision sized on
 measured text width (label overlaps: 9 → 0 on reference scenarios), **fixed-size arrow
 markers** (`userSpaceOnUse` — otherwise markers scale with stroke width, up to 48 px),
 **typed relation styles** for all 8 backend relations, **hover focus** on a node and its
