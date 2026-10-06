@@ -75,8 +75,9 @@
             <div class="history-item__row">
               <button class="mini" @click.stop="toggleSims(s.scenario_id)">
                 {{ expanded[s.scenario_id] ? '▾' : '▸' }} Simulations
+                <span v-if="s.simulation_count" class="mini__count">{{ s.simulation_count }}</span>
               </button>
-              <button class="history-item__del" @click.stop="remove(s.scenario_id)" title="Supprimer">×</button>
+              <button class="history-item__del" @click.stop="remove(s)" title="Supprimer">×</button>
             </div>
             <ul v-if="expanded[s.scenario_id]" class="sim-list">
               <li v-if="(sims[s.scenario_id] || []).length === 0" class="sim-empty">Aucune simulation.</li>
@@ -209,11 +210,21 @@ function shortId(id) { return (id || '').replace('sim_', '').slice(0, 8) }
 function goSim(id) { router.push({ name: 'CrisisSimulation', params: { simulationId: id } }) }
 function goTraj(id) { router.push({ name: 'CrisisTrajectories', params: { simulationId: id } }) }
 
-async function remove(id) {
+async function remove(s) {
+  // Suppression irréversible et en cascade : on annonce l'impact réel avant
+  // d'agir (13 scénarios ont déjà été perdus faute de confirmation).
+  const n = s.simulation_count || 0
+  const detail = n > 0
+    ? `\n\n${n} simulation${n > 1 ? 's' : ''} rattachée${n > 1 ? 's' : ''} ${n > 1 ? 'seront' : 'sera'} également supprimée${n > 1 ? 's' : ''}.`
+    : ''
+  if (!window.confirm(
+    `Supprimer « ${s.title} » ?${detail}\n\nCette action est irréversible.`
+  )) return
   try {
-    await deleteScenario(id)
+    await deleteScenario(s.scenario_id)
     await fetchScenarios()
   } catch (e) {
+    error.value = e?.message || 'Échec de la suppression du scénario.'
     console.error(e)
   }
 }
@@ -296,6 +307,11 @@ onMounted(() => {
 }
 .mini { background: none; border: none; color: var(--text-muted); font-size: 12px; cursor: pointer; padding: 2px 4px; }
 .mini:hover { color: var(--text); }
+.mini__count {
+  display: inline-block; margin-left: 4px; padding: 0 5px;
+  background: var(--surface-alt); border: 1px solid var(--border);
+  border-radius: 8px; font-size: 11px; font-variant-numeric: tabular-nums;
+}
 .mini--link { color: var(--link); }
 .mini--link:hover { color: var(--link-hover); }
 .sim-list { list-style: none; padding: 8px 0 0; margin: 6px 0 0; border-top: 1px solid var(--border); }

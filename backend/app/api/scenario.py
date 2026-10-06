@@ -18,6 +18,7 @@ from ..config import Config
 from ..services.crisis_graph_extractor import CrisisGraphExtractor
 from ..services.risk_repository import RiskRepository
 from ..models.scenario import ScenarioManager, ScenarioStatus
+from ..models.simulation import SimulationManager
 from ..utils.logger import get_logger
 
 logger = get_logger('discover.api.scenario')
@@ -152,13 +153,40 @@ def list_scenarios():
             "updated_at": s.updated_at,
             "node_count": len(s.nodes),
             "edge_count": len(s.edges),
+            # Permet à l'IHM d'annoncer l'impact réel d'une suppression
+            # (cascade) sans requête supplémentaire par scénario.
+            "simulation_count": len(SimulationManager.list_simulations(
+                scenario_id=s.scenario_id, limit=1000)),
         })
     return jsonify({"success": True, "data": items})
 
 
 @scenario_bp.route('/<scenario_id>', methods=['DELETE'])
 def delete_scenario(scenario_id: str):
+    """Supprime un scénario ET les simulations qui en dépendent (cascade).
+
+    Sans cascade, les simulations survivaient à leur scénario et devenaient
+    orphelines : leur onglet « Graphe » renvoyait alors un 404 définitif.
+    La cascade est descendante uniquement — supprimer une simulation ne
+    touche pas au scénario, qui peut en porter d'autres.
+    """
+    sims = SimulationManager.list_simulations(scenario_id=scenario_id, limit=1000)
+    deleted_sims = []
+    for sim in sims:
+        if SimulationManager.delete_simulation(sim.simulation_id):
+            deleted_sims.append(sim.simulation_id)
+
     ok = ScenarioManager.delete_scenario(scenario_id)
     if not ok:
         return jsonify({"success": False, "error": f"Scénario introuvable: {scenario_id}"}), 404
-    return jsonify({"success": True, "data": {"deleted": scenario_id}})
+
+    if deleted_sims:
+        logger.info(
+            f"Scénario {scenario_id} supprimé avec {len(deleted_sims)} simulation(s) : "
+            f"{', '.join(deleted_sims)}"
+        )
+    return jsonify({"success": True, "data": {
+        "deleted": scenario_id,
+        "deleted_simulations": deleted_sims,
+        "simulation_count": len(deleted_sims),
+    }})

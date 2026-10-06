@@ -243,6 +243,31 @@ delete. **Per-step LLM consumption** (tokens, duration, cost) is captured and
 shown at each stage (extraction, simulation, trajectories) and included in the
 exported report.
 
+### Suppression & intégrité des données / Deletion & data integrity
+
+**FR —** Un scénario et ses simulations forment un tout : une simulation privée
+de son scénario est inexploitable (son onglet « Graphe » renvoie un 404).
+La suppression suit donc une **cascade descendante** :
+
+- supprimer un **scénario** supprime aussi **toutes ses simulations** ;
+- supprimer une **simulation** ne touche **pas** au scénario, qui peut en porter
+  d'autres et reste exploitable seul.
+
+Les suppressions sont **définitives** — il n'y a ni corbeille ni versionnement,
+`backend/uploads/` étant exclu de Git. Toute action destructive demande donc une
+**confirmation explicite**, et celle d'un scénario annonce le nombre de
+simulations qui seront emportées (`simulation_count`, exposé par
+`GET /api/scenario/list` et affiché dans l'historique de l'intake).
+
+Tests de non-régression : `cd backend && uv run pytest tests/test_cascade_delete.py -v`.
+
+**EN —** A simulation without its scenario is unusable, so deletion **cascades
+downwards**: deleting a scenario removes its simulations, while deleting a
+simulation leaves the scenario untouched (it may hold others). Deletions are
+**permanent** — no trash, and `backend/uploads/` is Git-ignored — so every
+destructive action requires an explicit confirmation, and a scenario's
+confirmation states how many simulations will be removed with it.
+
 ---
 
 ## Trace d'exécution / Execution trace

@@ -80,7 +80,18 @@ async function saveRename(s) {
   editing.value = null
 }
 async function remove(s) {
-  try { await deleteSimulation(s.simulation_id); items.value = items.value.filter(x => x.simulation_id !== s.simulation_id) } catch (e) { console.error(e) }
+  // Suppression irréversible. Le scénario parent n'est PAS touché : il peut
+  // porter d'autres simulations (cascade descendante uniquement).
+  if (!window.confirm(
+    `Supprimer la simulation « ${s.title || s.simulation_id} » ?\n\n`
+    + 'Le scénario associé est conservé.\nCette action est irréversible.'
+  )) return
+  try {
+    await deleteSimulation(s.simulation_id)
+    items.value = items.value.filter(x => x.simulation_id !== s.simulation_id)
+  } catch (e) {
+    console.error(e)
+  }
 }
 
 onMounted(load)
