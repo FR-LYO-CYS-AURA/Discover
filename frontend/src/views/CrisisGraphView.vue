@@ -171,9 +171,19 @@ onMounted(load)
 }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.graph-view__body { flex: 1; display: grid; grid-template-columns: 1fr 320px; gap: 0; position: relative; }
+/*
+ * min-height: 0 est indispensable ici.
+ * - __body est un élément flex : sans cela son min-height vaut 'auto', il ne
+ *   peut donc pas rétrécir sous la hauteur de son contenu et adopte celle du
+ *   panneau latéral (qui peut dépasser 1600px avec une longue synthèse).
+ * - __side est un élément de grille : même règle ; sans min-height: 0 il
+ *   s'étire au lieu de défiler, et son overflow-y: auto ne s'active jamais.
+ * Conséquence du défaut : .crisis-graph (height: 100%) héritait d'une hauteur
+ * démesurée et le graphe se retrouvait centré sous la ligne de flottaison.
+ */
+.graph-view__body { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 320px; gap: 0; position: relative; }
 .graph-view__panel { padding: 16px; min-height: 0; }
-.graph-view__side { border-left: 1px solid var(--border); padding: 20px; overflow-y: auto; }
+.graph-view__side { border-left: 1px solid var(--border); padding: 20px; overflow-y: auto; min-height: 0; }
 
 .side-block { margin-bottom: 22px; }
 .side-block h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); margin: 0 0 8px; }
@@ -196,7 +206,15 @@ onMounted(load)
 .overlay--error { color: var(--danger); }
 
 @media (max-width: 860px) {
-  .graph-view__body { grid-template-columns: 1fr; }
-  .graph-view__side { border-left: none; border-top: 1px solid var(--border); }
+  /*
+   * Disposition empilée : on rend la hauteur au flux naturel de la page.
+   * Conserver min-height: 0 + overflow ici créerait une seconde zone de
+   * défilement imbriquée dans celle du document.
+   */
+  .graph-view__body { grid-template-columns: 1fr; min-height: auto; }
+  .graph-view__side {
+    border-left: none; border-top: 1px solid var(--border);
+    overflow: visible; min-height: auto;
+  }
 }
 </style>

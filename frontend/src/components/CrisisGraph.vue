@@ -284,6 +284,11 @@ function render() {
 
   // --- Forces ---
   const n = nodes.length
+  // Premier cadrage dès que la disposition est grossièrement stabilisée :
+  // l'événement 'end' n'arrive qu'après ~300 ticks (≈5 s), ce qui laissait le
+  // graphe non cadré pendant tout ce temps.
+  let tickCount = 0
+  const EARLY_FIT_TICK = 80
   simulation = d3.forceSimulation(nodes)
     .force('link', d3.forceLink(links).id((d) => d.id)
       // Une dépendance forte rapproche, une dépendance faible éloigne.
@@ -324,6 +329,8 @@ function render() {
   function ticked() {
     link.attr('d', linkPath)
     node.attr('transform', (d) => `translate(${d.x},${d.y})`)
+    tickCount += 1
+    if (tickCount === EARLY_FIT_TICK) fitToView(false)
   }
 
   function dragstarted(event, d) {
