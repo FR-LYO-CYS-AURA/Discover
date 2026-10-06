@@ -295,6 +295,44 @@ requests and background tasks), and a **global session summary** available on de
 
 ---
 
+## Lisibilité du graphe de crise / Crisis-graph readability
+
+**FR —** Le graphe (`frontend/src/components/CrisisGraph.vue`, D3 force-directed) porte
+20 à 26 nœuds, 28 à 39 arêtes et des libellés de 29 caractères en moyenne (jusqu'à 51).
+Plusieurs dispositifs le rendent lisible à cette densité :
+
+- **Familles de domaines** — les 15 domaines possibles (9 familles d'experts + 6 domaines
+  secteur) sont regroupés en **6 familles + « autre »** (`palette.js`). Sans cela, un
+  graphe de 20 nœuds affiche jusqu'à 13 teintes et la couleur ne porte plus de signal.
+  Le domaine précis reste affiché dans le panneau de détail.
+- **Libellés** — tronqués à 24 caractères, avec halo clair (`paint-order: stroke`) pour
+  rester lisibles au croisement des arêtes ; texte intégral en infobulle et dans le
+  panneau. La force de collision est dimensionnée sur la **largeur réelle du texte**
+  (mesurée via canvas), ce qui ramène les chevauchements de libellés de 9 à 0 sur les
+  scénarios de référence.
+- **Flèches** — `markerUnits="userSpaceOnUse"` : sans cela le marqueur est multiplié par
+  l'épaisseur du trait (jusqu'à 8), produisant des pointes de 30 à 48 px.
+- **Relations typées** — les 8 relations (`depend_de`, `impacte`, `fournit`, `regule`,
+  `communique`, `heberge`, `protege`, `propage_vers`) ont un style propre : trait plein
+  pour les dépendances structurelles, pointillé pour l'information et le contrôle,
+  accentuation pour les relations d'effet domino.
+- **Focalisation au survol** — met en avant le nœud, ses voisins directs et ses arêtes,
+  et atténue le reste.
+- **Contrôles** — cadrage automatique sur le contenu, bouton « recentrer », légende
+  cliquable (masquer une famille) et seuil de criticité. Les filtres masquent sans
+  relancer la simulation : le graphe ne se réorganise pas à chaque clic.
+
+**EN —** The D3 force-directed graph (20-26 nodes, 28-39 edges, labels averaging 29 chars)
+is made readable through: **domain families** (15 domains grouped into 6 + "other", since
+13 hues on 20 nodes carry no signal), **truncated haloed labels** with collision sized on
+measured text width (label overlaps: 9 → 0 on reference scenarios), **fixed-size arrow
+markers** (`userSpaceOnUse` — otherwise markers scale with stroke width, up to 48 px),
+**typed relation styles** for all 8 backend relations, **hover focus** on a node and its
+neighbourhood, and **controls** (fit-to-view, recenter, clickable legend, criticality
+threshold) that filter visually without restarting the simulation.
+
+---
+
 ## Identité visuelle / Visual identity
 
 **FR —** DISCOVER adopte un **thème clair** et un logo **papillon** (aile cyan / aile

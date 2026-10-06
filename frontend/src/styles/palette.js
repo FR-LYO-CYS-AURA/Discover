@@ -30,6 +30,46 @@ export function colorFor(domain) {
 }
 export const domainColor = colorFor
 
+/*
+ * Familles de domaines — lisibilité du graphe de crise.
+ *
+ * Les nœuds peuvent porter 15 domaines (9 familles d'experts + 6 domaines
+ * "secteur"). Sur un graphe de ~20 nœuds, cela produit autant de teintes que
+ * de nœuds : la couleur ne porte plus aucun signal et la légende devient
+ * illisible. On regroupe donc en 6 familles + "autre".
+ * Le domaine précis reste affiché dans le panneau de détail.
+ */
+export const DOMAIN_FAMILIES = [
+  { id: 'si', label: 'SI & cybersécurité', color: '#D6336C',
+    domains: ['cybersecurite', 'technique'] },
+  { id: 'ops', label: 'Opérations & terrain', color: '#1098AD',
+    domains: ['operationnel', 'operations', 'logistique', 'physique', 'sante'] },
+  { id: 'humain', label: 'Humain & juridique', color: '#5C6BC0',
+    domains: ['rh', 'juridique', 'reglementaire'] },
+  { id: 'finance', label: 'Finance', color: '#1C7ED6',
+    domains: ['finance'] },
+  { id: 'image', label: 'Image & géopolitique', color: '#F76707',
+    domains: ['communication', 'reputation', 'geopolitique'] },
+  { id: 'resilience', label: 'Résilience', color: '#7048E8',
+    domains: ['resilience'] },
+  { id: 'autre', label: 'Autre', color: '#868E96', domains: ['autre'] },
+]
+
+const DOMAIN_TO_FAMILY = DOMAIN_FAMILIES.reduce((acc, f) => {
+  f.domains.forEach((d) => { acc[d] = f })
+  return acc
+}, {})
+
+/** Famille d'un domaine (objet complet). Repli sur « Autre ». */
+export function familyOf(domain) {
+  return DOMAIN_TO_FAMILY[domain] || DOMAIN_TO_FAMILY.autre
+}
+
+/** Couleur de famille — utilisée pour les nœuds du graphe. */
+export function familyColor(domain) {
+  return familyOf(domain).color
+}
+
 // Couleurs du graphe D3 (thème clair).
 export const GRAPH = {
   text: '#1A1D23',        // labels de nœuds
@@ -37,7 +77,35 @@ export const GRAPH = {
   edgeActive: '#F85810',  // arête active (mode propagation)
   nodeStroke: '#FFFFFF',  // contour de nœud (séparation)
   impact: '#F85810',      // halo d'impact
+  textHalo: '#FBFBFB',    // contour des libellés (lisibilité sur arête)
+  dim: 0.12,              // opacité des éléments hors focus
 }
+
+/*
+ * Style d'arête par type de relation.
+ * Les relations du modèle étaient rendues à l'identique : l'information
+ * existait dans les données mais n'était pas visible.
+ *  - dépendances structurelles : trait plein
+ *  - flux d'information / contrôle : pointillé
+ *  - impacte / propage_vers    : accentué (relations d'effet domino)
+ * Liste alignée sur ALLOWED_RELATIONS (backend crisis_graph_extractor.py)
+ * + 'propage_vers', généré par le moteur domino pour les arêtes virtuelles.
+ */
+export const RELATION_STYLES = {
+  depend_de: { dash: null, label: 'dépend de' },
+  fournit: { dash: null, label: 'fournit' },
+  heberge: { dash: null, label: 'héberge' },
+  impacte: { dash: null, label: 'impacte', emphasis: true },
+  propage_vers: { dash: '6,3', label: 'propage vers', emphasis: true },
+  communique: { dash: '5,4', label: 'communique' },
+  regule: { dash: '2,3', label: 'régule' },
+  protege: { dash: '2,3', label: 'protège' },
+}
+
+export function relationStyle(relation) {
+  return RELATION_STYLES[relation] || { dash: null, label: relation || '—' }
+}
+
 
 // Échelle de sévérité 0..5 (pastilles).
 export function sevColor(s) {
