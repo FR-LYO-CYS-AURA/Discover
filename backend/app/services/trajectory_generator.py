@@ -11,6 +11,7 @@ approche HYBRIDE :
 
 from typing import Dict, Any, List, Optional
 
+from ..utils.coerce import as_dict, as_list, as_str_list
 from ..utils.llm_client import LLMClient
 from ..utils.logger import get_logger
 from .domino_engine import DominoEngine
@@ -84,8 +85,8 @@ class TrajectoryGenerator:
         # nœuds couverts par une mesure de mitigation (cible de réduction d'impact)
         mitigated = set()
         for a in expert_analyses:
-            if (a.get('measures') or {}).get('mitigation'):
-                mitigated.update(a.get('affected_node_ids', []))
+            if as_dict(a.get('measures')).get('mitigation'):
+                mitigated.update(as_list(a.get('affected_node_ids')))
         mitigated = list(mitigated)
 
         trajectories: List[Dict[str, Any]] = []
@@ -137,12 +138,11 @@ class TrajectoryGenerator:
                 temperature=0.5, max_tokens=1800, schema=NARRATIVE_SCHEMA,
             )
             by_type = {str(x.get('type', '')).strip().lower(): x
-                       for x in raw.get('trajectories', []) if isinstance(x, dict)}
+                       for x in as_list(raw.get('trajectories')) if isinstance(x, dict)}
             for t in trajectories:
-                info = by_type.get(t['type'], {})
+                info = as_dict(by_type.get(t['type']))
                 t['narrative'] = str(info.get('narrative', '')).strip()
-                kb = info.get('key_bifurcations') or []
-                t['key_bifurcations'] = [str(x).strip() for x in kb if str(x).strip()][:5]
+                t['key_bifurcations'] = as_str_list(info.get('key_bifurcations'), 5)
         except Exception as e:  # noqa: BLE001
             logger.warning(f"Narration LLM des trajectoires échouée : {e}")
             for t in trajectories:

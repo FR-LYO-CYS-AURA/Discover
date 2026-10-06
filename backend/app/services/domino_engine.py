@@ -14,6 +14,7 @@ Sortie : graphe propagé (impact_score + ordre par nœud) + chaînes de propagat
 
 from typing import Dict, Any, List, Optional
 
+from ..utils.coerce import as_dict, as_list
 from ..utils.llm_client import LLMClient
 from ..utils.logger import get_logger
 
@@ -77,9 +78,9 @@ class DominoEngine:
         impact: Dict[str, float] = {n['id']: 0.0 for n in nodes}
         order: Dict[str, int] = {}
         for a in expert_analyses:
-            sev = (a.get('severity') or {}).get('criticality', 2) / 5.0
+            sev = as_dict(a.get('severity')).get('criticality', 2) / 5.0
             seed = min(1.0, (0.5 + 0.5 * sev) * severity_mult)
-            for nid in a.get('affected_node_ids', []):
+            for nid in as_list(a.get('affected_node_ids')):
                 if nid in impact:
                     val = seed * (1.0 - mitigation_factor) if nid in mitigated else seed
                     impact[nid] = max(impact[nid], val)
@@ -163,7 +164,9 @@ class DominoEngine:
                 rep[d] = nid
         for a in expert_analyses:
             src_dom = a.get('domain')
-            for p in a.get('propagations', []):
+            for p in as_list(a.get('propagations')):
+                if not isinstance(p, dict):
+                    continue
                 tgt = p.get('to_node_id') or rep.get(p.get('to_domain'))
                 src = rep.get(src_dom)
                 if src and tgt and src != tgt:
@@ -290,7 +293,7 @@ class DominoEngine:
                 [{"role": "system", "content": system}, {"role": "user", "content": user}],
                 temperature=0.4, max_tokens=1500, schema=NARRATION_SCHEMA,
             )
-            by_idx = {int(c.get('index', -1)): c for c in raw.get('chains', []) if isinstance(c, dict)}
+            by_idx = {int(c.get('index', -1)): c for c in as_list(raw.get('chains')) if isinstance(c, dict)}
             for i, c in enumerate(top):
                 info = by_idx.get(i, {})
                 c['narrative'] = str(info.get('narrative', '')).strip()

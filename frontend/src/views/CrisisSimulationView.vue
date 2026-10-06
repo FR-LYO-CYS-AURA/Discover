@@ -50,13 +50,14 @@
             <div class="expert__head">
               <span class="expert__dot" :style="{ background: domainColor(a.domain) }"></span>
               <span class="expert__label">{{ a.domain_label }}</span>
-              <span class="expert__sev">P{{ a.severity.probability }}·G{{ a.severity.gravity }}·C{{ a.severity.criticality }}</span>
+              <span v-if="a.fallback" class="expert__degraded" title="Analyse dégradée : repli sur les règles du référentiel">dégradée</span>
+              <span class="expert__sev">P{{ sevOf(a).probability }}·G{{ sevOf(a).gravity }}·C{{ sevOf(a).criticality }}</span>
             </div>
             <ul class="expert__impacts">
-              <li v-for="(imp, i) in a.impacts.slice(0, 3)" :key="i">{{ imp }}</li>
+              <li v-for="(imp, i) in impactsOf(a).slice(0, 3)" :key="i">{{ imp }}</li>
             </ul>
-            <div class="expert__prop" v-if="a.propagations.length">
-              ↳ {{ a.propagations.length }} propagation(s) : {{ a.propagations.map(p => p.to_domain).join(', ') }}
+            <div class="expert__prop" v-if="propsOf(a).length">
+              ↳ {{ propsOf(a).length }} propagation(s) : {{ propsOf(a).map(p => p.to_domain).join(', ') }}
             </div>
           </div>
         </div>
@@ -98,6 +99,13 @@ const progressText = computed(() => statusLabel.value + '…')
 
 const analyses = computed(() => sim.value?.expert_analyses || [])
 const chains = computed(() => sim.value?.propagation_chains || [])
+
+// Gardes d'affichage : un modèle peut renvoyer un type inattendu (chaîne au
+// lieu de tableau). Sans ces gardes, `v-for` sur une chaîne afficherait un
+// caractère par ligne. Le backend normalise déjà, ceci est la seconde barrière.
+const impactsOf = (a) => (Array.isArray(a?.impacts) ? a.impacts : [])
+const propsOf = (a) => (Array.isArray(a?.propagations) ? a.propagations : [])
+const sevOf = (a) => (a?.severity && typeof a.severity === 'object' ? a.severity : {})
 const graphNodes = computed(() => sim.value?.propagated_graph?.nodes || [])
 const graphEdges = computed(() => sim.value?.propagated_graph?.edges || [])
 
@@ -157,6 +165,11 @@ onUnmounted(() => { if (poll) clearInterval(poll) })
 .expert__dot { width: 10px; height: 10px; border-radius: 50%; }
 .expert__label { font-weight: 600; font-size: 13px; flex: 1; }
 .expert__sev { font-size: 11px; color: var(--text-muted); }
+.expert__degraded {
+  font-size: 10px; text-transform: uppercase; letter-spacing: .4px;
+  color: var(--warning); background: var(--warning-bg);
+  border-radius: 3px; padding: 1px 5px; margin-right: 6px;
+}
 .expert__impacts { margin: 4px 0; padding-left: 16px; font-size: 12px; color: var(--text); }
 .expert__impacts li { margin: 2px 0; }
 .expert__prop { font-size: 12px; color: var(--brand-orange-deep); margin-top: 4px; }

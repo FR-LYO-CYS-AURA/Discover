@@ -8,13 +8,17 @@ Assemble un rapport Markdown à partir d'un scénario et de sa simulation
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 
+from ..utils.coerce import as_dict, as_list, as_str_list
+
 
 def consolidated_decisions(trajectories: List[Dict[str, Any]], limit: int = 10) -> List[Dict[str, Any]]:
     """Union des décisions des trajectoires, classées par effet max."""
     agg: Dict[tuple, Dict[str, Any]] = {}
     for t in trajectories:
-        for d in t.get('decisions', []):
-            key = (d.get('domain'), d.get('measure', '').lower())
+        for d in as_list(t.get('decisions')):
+            if not isinstance(d, dict):
+                continue
+            key = (d.get('domain'), str(d.get('measure', '')).lower())
             cur = agg.get(key)
             if cur is None:
                 agg[key] = {
@@ -64,17 +68,19 @@ def build_markdown(scenario: Any, simulation: Any) -> str:
     if analyses:
         L.append("## 3. Analyses par domaine d'expert")
         for a in analyses:
-            sev = a.get('severity', {})
+            sev = as_dict(a.get('severity'))
             L.append(f"### {a.get('domain_label', a.get('domain'))}")
             L.append(f"*Sévérité : probabilité {sev.get('probability')}/5 · gravité "
                      f"{sev.get('gravity')}/5 · criticité {sev.get('criticality')}/5*")
-            for imp in a.get('impacts', [])[:4]:
+            for imp in as_str_list(a.get('impacts'), 4):
                 L.append(f"- {imp}")
-            measures = a.get('measures', {}) or {}
-            if measures.get('mitigation'):
-                L.append(f"- **Mitigation** : {', '.join(measures['mitigation'][:4])}")
-            if measures.get('prevention'):
-                L.append(f"- **Prévention** : {', '.join(measures['prevention'][:4])}")
+            measures = as_dict(a.get('measures'))
+            mitigation = as_str_list(measures.get('mitigation'), 4)
+            prevention = as_str_list(measures.get('prevention'), 4)
+            if mitigation:
+                L.append(f"- **Mitigation** : {', '.join(mitigation)}")
+            if prevention:
+                L.append(f"- **Prévention** : {', '.join(prevention)}")
             L.append("")
 
     # Chaînes de propagation
@@ -82,7 +88,7 @@ def build_markdown(scenario: Any, simulation: Any) -> str:
     if chains:
         L.append("## 4. Chaînes de propagation (effets domino)")
         for c in chains[:8]:
-            path = " → ".join(c.get('labels', []))
+            path = " → ".join(as_str_list(c.get('labels')))
             sev = c.get('severity')
             L.append(f"- **{path}**" + (f" *(sévérité {sev}/5)*" if sev else ""))
             if c.get('narrative'):
@@ -106,7 +112,7 @@ def build_markdown(scenario: Any, simulation: Any) -> str:
             if t.get('key_bifurcations'):
                 L.append("")
                 L.append("Bascules clés :")
-                for b in t['key_bifurcations']:
+                for b in as_str_list(t.get('key_bifurcations')):
                     L.append(f"- {b}")
             L.append("")
 

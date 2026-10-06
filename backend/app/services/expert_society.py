@@ -15,6 +15,7 @@ import concurrent.futures
 from typing import Dict, Any, List, Optional
 
 from ..config import Config
+from ..utils.coerce import as_dict, as_list, as_str_list
 from ..utils.llm_client import LLMClient
 from ..utils.logger import get_logger
 from .risk_repository import RiskRepository
@@ -81,6 +82,20 @@ def _clamp_float(v, lo, hi, default):
         return max(lo, min(hi, float(v)))
     except (TypeError, ValueError):
         return default
+
+
+def _is_usable_analysis(raw: Dict[str, Any]) -> bool:
+    """Valide qu'une réponse d'agent expert porte au moins une information.
+
+    Passé à `chat_json(validate=...)` : une sortie vide déclenche le repli
+    texte puis l'échec explicite, au lieu d'être acceptée silencieusement.
+    """
+    raw = as_dict(raw)
+    return bool(
+        as_str_list(raw.get('impacts'))
+        or as_list(raw.get('propagations'))
+        or as_list(raw.get('affected_node_ids'))
+    )
 
 
 class ExpertSociety:
@@ -160,23 +175,35 @@ class ExpertSociety:
         )
         messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
         try:
-            raw = self.llm.chat_json(messages, temperature=0.3, max_tokens=2048, schema=EXPERT_SCHEMA)
-            return self._normalize(domain, family, raw, nodes)
+            raw = self.llm.chat_json(messages, temperature=0.3, max_tokens=2048,
+                                     schema=EXPERT_SCHEMA, validate=_is_usable_analysis)
+            analysis = self._normalize(domain, family, raw, nodes)
         except Exception as e:  # noqa: BLE001
             logger.warning(f"Agent expert '{domain}' en échec, fallback règles : {e}")
             return self._fallback(domain, family, nodes)
 
+        # Une analyse sans impact, sans propagation ni nœud affecté n'apporte
+        # rien : la compter comme valide masquerait la défaillance du modèle.
+        if not (analysis['impacts'] or analysis['propagations'] or analysis['affected_node_ids']):
+            logger.warning(
+                f"Agent expert '{domain}' : analyse vide (aucun impact/propagation/nœud), "
+                f"fallback règles"
+            )
+            return self._fallback(domain, family, nodes)
+        return analysis
+
     def _normalize(self, domain: str, family: Dict[str, Any],
                    raw: Dict[str, Any], nodes: List[Dict[str, Any]]) -> Dict[str, Any]:
+        raw = as_dict(raw)
         valid_ids = {n['id'] for n in nodes}
         expert_domains = set(Config.EXPERT_DOMAINS)
-        sev = raw.get('severity') or {}
+        sev = as_dict(raw.get('severity'))
         prob = _clamp_int(sev.get('probability'), 1, 5, 3)
         grav = _clamp_int(sev.get('gravity'), 1, 5, 4)
         crit = max(1, min(5, round((prob * grav) / 5)))
 
         propagations = []
-        for p in (raw.get('propagations') or []):
+        for p in as_list(raw.get('propagations')):
             if not isinstance(p, dict):
                 continue
             to_dom = str(p.get('to_domain', '')).strip().lower()
@@ -191,18 +218,18 @@ class ExpertSociety:
                 "rationale": str(p.get('rationale', '')).strip(),
             })
 
-        affected = [nid for nid in (raw.get('affected_node_ids') or []) if nid in valid_ids]
-        measures = raw.get('measures') or {}
+        affected = [nid for nid in as_list(raw.get('affected_node_ids')) if nid in valid_ids]
+        measures = as_dict(raw.get('measures'))
         return {
             "domain": domain,
             "domain_label": family['label'],
-            "impacts": [str(x).strip() for x in (raw.get('impacts') or []) if str(x).strip()][:8],
+            "impacts": as_str_list(raw.get('impacts'), 8),
             "severity": {"probability": prob, "gravity": grav, "criticality": crit},
             "affected_node_ids": affected,
             "propagations": propagations,
             "measures": {
-                "prevention": [str(x).strip() for x in (measures.get('prevention') or []) if str(x).strip()][:6],
-                "mitigation": [str(x).strip() for x in (measures.get('mitigation') or []) if str(x).strip()][:6],
+                "prevention": as_str_list(measures.get('prevention'), 6),
+                "mitigation": as_str_list(measures.get('mitigation'), 6),
             },
         }
 

@@ -13,6 +13,7 @@ import re
 import json
 from typing import Dict, Any, List, Optional
 
+from ..utils.coerce import as_list
 from ..utils.llm_client import LLMClient
 from ..utils.logger import get_logger
 from ..config import Config
@@ -48,6 +49,11 @@ ALLOWED_RELATIONS = {
 
 
 # JSON Schema de sortie (exploité par la sortie structurée native d'OpenCode)
+#
+# ATTENTION : OpenCode fait respecter le TYPE des champs (array vs string) mais
+# PAS les contraintes de cardinalité — un `minItems: 1` violé passe sans erreur
+# (vérifié : un tableau vide est accepté tel quel). La garantie réelle vient
+# donc du paramètre `validate=` de chat_json, pas du schéma.
 CRISIS_GRAPH_SCHEMA = {
     "type": "object",
     "properties": {
@@ -216,7 +222,7 @@ class CrisisGraphExtractor:
             raise ValueError("Réponse LLM invalide (objet attendu).")
 
         raw_nodes = raw.get('nodes') or []
-        raw_edges = raw.get('edges') or []
+        raw_edges = as_list(raw.get('edges'))
         summary = raw.get('analysis_summary') or ''
 
         if not isinstance(raw_nodes, list) or not raw_nodes:

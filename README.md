@@ -351,6 +351,44 @@ and model selection are handled by OpenCode. DISCOVER auto-starts and manages
 
 Les variables (`OPENCODE_*`, `LLM_BACKEND`) sont documentées dans `.env.example`.
 
+### Robustesse face aux sorties LLM / Resilience to LLM outputs
+
+**FR —** Les modèles ne respectent pas tous le schéma demandé avec la même rigueur.
+Mesures relevées sur ce projet (analyses expertes exploitables, 8 domaines par simulation) :
+
+| Modèle | Analyses exploitables |
+|---|---|
+| `claude-opus-4.8` | **48 / 48** |
+| `claude-opus-5` | 12 / 53 |
+| `claude-sonnet-5` | 2 / 8 |
+
+Comportement vérifié d'OpenCode : il fait respecter le **type** des champs (`array` vs
+`string`) mais **pas la cardinalité** — un `minItems: 1` violé passe sans erreur. La
+garantie réelle vient donc du paramètre `validate=` de `chat_json`, pas du schéma.
+
+Trois garde-fous en découlent :
+
+1. **Coercition défensive** (`backend/app/utils/coerce.py`) — `as_list` / `as_dict` /
+   `as_str_list` normalisent toute sortie LLM. Une chaîne renvoyée là où un tableau est
+   attendu n'est **jamais** itérée caractère par caractère (elle est décodée si elle
+   contient un tableau JSON, sinon traitée comme un élément unique).
+2. **Pas de dégradation silencieuse** — une analyse experte sans impact, ni propagation,
+   ni nœud affecté bascule en repli sur le référentiel, est **loguée en WARNING** et
+   signalée « dégradée » dans l'IHM, au lieu d'être comptée comme valide.
+3. **Modèle épinglé** — `OPENCODE_MODEL=github-copilot/claude-opus-4.8` recommandé
+   (voir `.env.example`). Laisser la variable vide expose au modèle par défaut
+   d'OpenCode, qui peut changer sans préavis.
+
+Tests de non-régression : `cd backend && uv run pytest tests/ -v`.
+
+**EN —** Models honor the requested schema unevenly (measured here: opus-4.8 48/48,
+opus-5 12/53, sonnet-5 2/8). OpenCode enforces field **types** but **not cardinality**
+(a violated `minItems` passes silently), so the real guarantee is `chat_json(validate=…)`.
+Hence three safeguards: **defensive coercion** (`utils/coerce.py` — a string is never
+iterated character by character), **no silent degradation** (empty expert analyses fall
+back, are logged and flagged in the UI), and a **pinned model**
+(`OPENCODE_MODEL=github-copilot/claude-opus-4.8`). Regression tests: `uv run pytest tests/`.
+
 ---
 
 ## Cas d'usage / Use cases

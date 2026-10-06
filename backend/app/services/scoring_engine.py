@@ -11,6 +11,7 @@ propagé (moteur domino) et des analyses d'agents experts.
 
 from typing import Dict, Any, List
 
+from ..utils.coerce import as_dict, as_str_list
 from .risk_repository import RiskRepository
 
 # Poids par type de mesure (la mitigation agit pendant la crise, la prévention en amont)
@@ -42,7 +43,7 @@ def consequence_scores(propagated_nodes: List[Dict[str, Any]],
                          for n in nodes) / mass
         else:
             # domaine sans nœud propre : reprendre la sévérité experte
-            sev = next((a['severity']['criticality'] for a in expert_analyses
+            sev = next((as_dict(a.get('severity')).get('criticality') for a in expert_analyses
                         if a['domain'] == dom and a.get('severity')), 2)
             impact = (sev or 2) / 5.0
             mass = 1.0
@@ -69,10 +70,10 @@ def decision_scores(expert_analyses: List[Dict[str, Any]],
         dom = a['domain']
         dom_impact = domain_scores.get(dom, {}).get('impact', 0.4)
         label = a.get('domain_label', dom)
-        measures = a.get('measures', {}) or {}
+        measures = as_dict(a.get('measures'))
         for mtype in ("mitigation", "prevention"):
-            for measure in (measures.get(mtype) or []):
-                m = str(measure).strip()
+            for measure in as_str_list(measures.get(mtype)):
+                m = measure.strip()
                 if not m:
                     continue
                 key = (dom, m.lower())

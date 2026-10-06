@@ -21,6 +21,7 @@ from ..services.expert_society import ExpertSociety
 from ..services.domino_engine import DominoEngine
 from ..services.trajectory_generator import TrajectoryGenerator
 from ..services import report_builder
+from ..utils.coerce import as_dict, as_list
 from ..models.scenario import ScenarioManager
 from ..models.simulation import SimulationManager, SimulationStatus
 from ..models.task import TaskManager, TaskStatus
@@ -40,14 +41,14 @@ def _aggregate_domain_scores(expert_analyses):
     """Agrégat simple de criticité par domaine (échelle 1-5)."""
     scores = {}
     for a in expert_analyses:
-        sev = a.get('severity', {})
+        sev = as_dict(a.get('severity'))
         scores[a['domain']] = {
             "label": a.get('domain_label', a['domain']),
             "probability": sev.get('probability'),
             "gravity": sev.get('gravity'),
             "criticality": sev.get('criticality'),
-            "affected_count": len(a.get('affected_node_ids', [])),
-            "propagation_count": len(a.get('propagations', [])),
+            "affected_count": len(as_list(a.get('affected_node_ids'))),
+            "propagation_count": len(as_list(a.get('propagations'))),
         }
     return scores
 
@@ -228,7 +229,7 @@ def list_simulations():
         # indice global max des trajectoires (si présentes)
         max_index = None
         if s.trajectories:
-            vals = [t.get('scores', {}).get('global_index') for t in s.trajectories]
+            vals = [as_dict(t.get('scores')).get('global_index') for t in s.trajectories]
             vals = [v for v in vals if v is not None]
             max_index = max(vals) if vals else None
         items.append({
