@@ -1,0 +1,309 @@
+{
+  "nodes": [
+    {
+      "id": "titre",
+      "type": "text",
+      "x": -420,
+      "y": -980,
+      "width": 1040,
+      "height": 110,
+      "text": "# Ontologie du référentiel de risques\n_DISCOVER — 8 catégories · 64 aléas · 9 familles · 18 risques_"
+    },
+    {
+      "id": "grp_aleas",
+      "type": "group",
+      "x": -1500,
+      "y": -760,
+      "width": 620,
+      "height": 1130,
+      "label": "ALÉAS — 8 catégories, 64 types",
+      "color": "2"
+    },
+    {
+      "id": "cat0",
+      "type": "file",
+      "file": "Catégories/Accident.md",
+      "x": -1450,
+      "y": -690,
+      "width": 520,
+      "height": 100,
+      "color": "2"
+    },
+    {
+      "id": "cat1",
+      "type": "file",
+      "file": "Catégories/Aléa naturel.md",
+      "x": -1450,
+      "y": -560,
+      "width": 520,
+      "height": 100,
+      "color": "2"
+    },
+    {
+      "id": "cat2",
+      "type": "file",
+      "file": "Catégories/Invasion.md",
+      "x": -1450,
+      "y": -430,
+      "width": 520,
+      "height": 100,
+      "color": "2"
+    },
+    {
+      "id": "cat3",
+      "type": "file",
+      "file": "Catégories/Médico-sanitaire.md",
+      "x": -1450,
+      "y": -300,
+      "width": 520,
+      "height": 100,
+      "color": "2"
+    },
+    {
+      "id": "cat4",
+      "type": "file",
+      "file": "Catégories/Mouvement social.md",
+      "x": -1450,
+      "y": -170,
+      "width": 520,
+      "height": 100,
+      "color": "2"
+    },
+    {
+      "id": "cat5",
+      "type": "file",
+      "file": "Catégories/Pénurie.md",
+      "x": -1450,
+      "y": -40,
+      "width": 520,
+      "height": 100,
+      "color": "2"
+    },
+    {
+      "id": "cat6",
+      "type": "file",
+      "file": "Catégories/Socio-culturel – politique – écologique.md",
+      "x": -1450,
+      "y": 90,
+      "width": 520,
+      "height": 100,
+      "color": "2"
+    },
+    {
+      "id": "cat7",
+      "type": "file",
+      "file": "Catégories/Terrorisme ou malveillance.md",
+      "x": -1450,
+      "y": 220,
+      "width": 520,
+      "height": 100,
+      "color": "2"
+    },
+    {
+      "id": "grp_risques",
+      "type": "group",
+      "x": 900,
+      "y": -760,
+      "width": 620,
+      "height": 1260,
+      "label": "RISQUES — 9 familles, 18 intitulés",
+      "color": "5"
+    },
+    {
+      "id": "fam0",
+      "type": "file",
+      "file": "Familles/Opérationnel.md",
+      "x": 950,
+      "y": -690,
+      "width": 520,
+      "height": 100,
+      "color": "5"
+    },
+    {
+      "id": "fam1",
+      "type": "file",
+      "file": "Familles/Industriel – technique.md",
+      "x": 950,
+      "y": -560,
+      "width": 520,
+      "height": 100,
+      "color": "5"
+    },
+    {
+      "id": "fam2",
+      "type": "file",
+      "file": "Familles/Ressources humaines.md",
+      "x": 950,
+      "y": -430,
+      "width": 520,
+      "height": 100,
+      "color": "5"
+    },
+    {
+      "id": "fam3",
+      "type": "file",
+      "file": "Familles/Juridique – conformité.md",
+      "x": 950,
+      "y": -300,
+      "width": 520,
+      "height": 100,
+      "color": "5"
+    },
+    {
+      "id": "fam4",
+      "type": "file",
+      "file": "Familles/Financier.md",
+      "x": 950,
+      "y": -170,
+      "width": 520,
+      "height": 100,
+      "color": "5"
+    },
+    {
+      "id": "fam5",
+      "type": "file",
+      "file": "Familles/Image – réputation.md",
+      "x": 950,
+      "y": -40,
+      "width": 520,
+      "height": 100,
+      "color": "5"
+    },
+    {
+      "id": "fam6",
+      "type": "file",
+      "file": "Familles/Géopolitique – institutionnel.md",
+      "x": 950,
+      "y": 90,
+      "width": 520,
+      "height": 100,
+      "color": "5"
+    },
+    {
+      "id": "fam7",
+      "type": "file",
+      "file": "Familles/Informatique – numérique.md",
+      "x": 950,
+      "y": 220,
+      "width": 520,
+      "height": 100,
+      "color": "5"
+    },
+    {
+      "id": "fam8",
+      "type": "file",
+      "file": "Familles/Défaillance – résilience.md",
+      "x": 950,
+      "y": 350,
+      "width": 520,
+      "height": 100,
+      "color": "5"
+    },
+    {
+      "id": "croisement",
+      "type": "file",
+      "file": "Matrice aléa × famille.md",
+      "x": -400,
+      "y": -700,
+      "width": 1000,
+      "height": 140,
+      "color": "3"
+    },
+    {
+      "id": "note_cart",
+      "type": "text",
+      "x": -400,
+      "y": -520,
+      "width": 1000,
+      "height": 120,
+      "text": "**Croisement exhaustif** : tout aléa se décline dans les 9 familles.\n64 × 9 × 2 = **1152 lignes** du CSV — règle énoncée, non matérialisée."
+    },
+    {
+      "id": "pont",
+      "type": "text",
+      "x": -400,
+      "y": -250,
+      "width": 1000,
+      "height": 90,
+      "text": "## Le pont entre les deux taxonomies"
+    },
+    {
+      "id": "prob",
+      "type": "text",
+      "x": -400,
+      "y": -120,
+      "width": 470,
+      "height": 110,
+      "text": "**Probabilité**\n_portée par l’aléa_",
+      "color": "6"
+    },
+    {
+      "id": "grav",
+      "type": "text",
+      "x": 130,
+      "y": -120,
+      "width": 470,
+      "height": 110,
+      "text": "**Gravité**\n_portée par la famille_",
+      "color": "6"
+    },
+    {
+      "id": "crit",
+      "type": "file",
+      "file": "Scoring/Matrice de criticité.md",
+      "x": -400,
+      "y": 60,
+      "width": 1000,
+      "height": 140,
+      "color": "6"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "fromNode": "grp_aleas",
+      "fromSide": "right",
+      "toNode": "croisement",
+      "toSide": "left",
+      "label": "se décline en"
+    },
+    {
+      "id": "e1",
+      "fromNode": "grp_risques",
+      "fromSide": "left",
+      "toNode": "croisement",
+      "toSide": "right",
+      "label": "regroupe"
+    },
+    {
+      "id": "e2",
+      "fromNode": "grp_aleas",
+      "fromSide": "bottom",
+      "toNode": "prob",
+      "toSide": "left",
+      "label": "porte"
+    },
+    {
+      "id": "e3",
+      "fromNode": "grp_risques",
+      "fromSide": "bottom",
+      "toNode": "grav",
+      "toSide": "right",
+      "label": "porte"
+    },
+    {
+      "id": "e4",
+      "fromNode": "prob",
+      "fromSide": "bottom",
+      "toNode": "crit",
+      "toSide": "top"
+    },
+    {
+      "id": "e5",
+      "fromNode": "grav",
+      "fromSide": "bottom",
+      "toNode": "crit",
+      "toSide": "top"
+    }
+  ]
+}

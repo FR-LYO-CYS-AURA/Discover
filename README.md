@@ -165,6 +165,47 @@ d'extraction** du graphe de crise et l'**amorçage du scoring**. Régénération
 9 risk families = the expert domains, and a probability×gravity→criticality scoring matrix). It
 powers assisted intake, crisis-graph extraction context and scoring seeding.
 
+### Ontologie en graphe de connaissance (Obsidian) / Ontology as a knowledge graph
+
+**FR —** Le référentiel est également publié comme **vault Obsidian autonome** dans
+`data/onto/`, à des fins de présentation et d'exploration. Ouvrir ce dossier comme
+coffre dans Obsidian, puis `Ctrl/Cmd + G` pour la vue graphe (couleurs préconfigurées).
+
+| | |
+|---|---|
+| **108 notes** | 8 catégories · 64 aléas · 9 familles · 18 risques · 7 scoring · 2 règles |
+| **483 liens** | tous résolus, aucune note orpheline |
+| **Canvas** | `Ontologie — schéma.canvas`, disposition **fixe** pour projeter |
+
+Deux partis pris de modélisation :
+
+1. **Les 1152 lignes du CSV ne sont pas des notes.** Le fichier est un *produit
+   cartésien* généré (64 aléas × 18 intitulés) : le croisement étant complet, il ne
+   porte aucune information distinctive. Les matérialiser donnerait 1152 notes et
+   ~2300 liens équivalents, noyant l'ontologie réelle. La règle est énoncée une fois
+   dans la note *Matrice aléa × famille*.
+2. **Le scoring est le pont sémantique.** Les hiérarchies seules (catégorie→aléa,
+   famille→risque) formeraient 17 étoiles disjointes. La *probabilité* étant portée par
+   l'**aléa** et la *gravité* par la **famille**, leur croisement
+   (*Matrice de criticité*) relie les deux taxonomies — et cette matrice est vérifiée
+   conforme au moteur de scoring applicatif.
+
+Les 102 tags (dont 21 partagés entre aléas) sont des tags Obsidian natifs : activer
+« Afficher les étiquettes » dans la vue graphe pour révéler la trame transversale.
+
+```bash
+python backend/scripts/build_ontology_vault.py   # génère data/onto/ (idempotent)
+python backend/scripts/check_ontology_vault.py   # 31 contrôles structurels
+```
+
+**EN —** The referential is also published as a self-contained **Obsidian vault**
+(`data/onto/`): 108 notes, 483 fully-resolved links, preconfigured graph colours and a
+fixed-layout canvas for presentations. Two modelling choices: the CSV's 1152 rows are a
+*generated cartesian product* carrying no distinctive information, so the rule is stated
+once instead of being materialised; and the **scoring** (probability on hazards, gravity
+on risk families) is what bridges the two otherwise disjoint taxonomies — the matrix is
+checked against the application's own scoring engine.
+
 ---
 
 ## Simulation de crise / Crisis simulation

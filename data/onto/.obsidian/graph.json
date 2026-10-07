@@ -1,0 +1,58 @@
+{
+  "collapse-filter": true,
+  "search": "",
+  "showTags": false,
+  "showAttachments": false,
+  "hideUnresolved": false,
+  "showOrphans": true,
+  "collapse-color-groups": false,
+  "colorGroups": [
+    {
+      "query": "path:\"Catégories\"",
+      "color": {
+        "a": 1,
+        "rgb": 14037868
+      }
+    },
+    {
+      "query": "path:\"Aléas\"",
+      "color": {
+        "a": 1,
+        "rgb": 15246336
+      }
+    },
+    {
+      "query": "path:\"Familles\"",
+      "color": {
+        "a": 1,
+        "rgb": 1087661
+      }
+    },
+    {
+      "query": "path:\"Risques\"",
+      "color": {
+        "a": 1,
+        "rgb": 7358696
+      }
+    },
+    {
+      "query": "path:\"Scoring\"",
+      "color": {
+        "a": 1,
+        "rgb": 8818326
+      }
+    }
+  ],
+  "collapse-display": true,
+  "showArrows": true,
+  "textFadeMultiplier": -0.8,
+  "nodeSizeMultiplier": 1.3,
+  "lineSizeMultiplier": 1,
+  "collapse-forces": true,
+  "centerStrength": 0.45,
+  "repelStrength": 12,
+  "linkStrength": 0.8,
+  "linkDistance": 180,
+  "scale": 0.6,
+  "close": false
+}
